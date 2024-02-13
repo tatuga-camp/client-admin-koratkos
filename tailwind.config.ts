@@ -20,7 +20,7 @@ const config: Config = {
         "super-main-color": "#5C430D",
         "main-color": "#597E52",
         "secondary-color": "#3193A9",
-        "third-color": "#C6A969",
+        "third-color": "#F1E4C3",
         "fourth-color": "#FFFFEC",
       },
       fontFamily: {
