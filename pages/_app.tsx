@@ -7,6 +7,7 @@ import { PrimeReactProvider, addLocale } from "primereact/api";
 import NextTopLoader from "nextjs-toploader";
 import "moment/locale/th";
 import type { AppProps } from "next/app";
+import "moment/locale/th";
 
 export default function App({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient());
