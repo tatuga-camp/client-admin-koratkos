@@ -3,6 +3,7 @@ import Link from "next/link";
 import React from "react";
 import { RiShutDownLine } from "react-icons/ri";
 import { menusSidebar } from "../../data/menus";
+import { useSignOut } from "../../utils";
 
 function DashboardSidebar() {
   return (
@@ -50,6 +51,7 @@ function DashboardSidebar() {
         </ul>
       </div>
       <Link
+        onClick={useSignOut}
         className="flex flex-col items-center justify-center "
         href="/auth/sign-in"
       >

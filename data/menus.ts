@@ -9,6 +9,7 @@ import {
   GetAllPendingEvaluationCountService,
   GetAllSuccessEvaluationCountService,
 } from "../services/overview";
+import { FaLock } from "react-icons/fa";
 
 export const menusSidebar = () => {
   return [
@@ -19,7 +20,7 @@ export const menusSidebar = () => {
     },
     {
       title: "การตั้งค่า",
-      href: "/admin/setting",
+      href: "/account/setting",
       icon: IoSettingsOutline,
     },
   ];
@@ -76,4 +77,17 @@ export const statisticMenuCards = (): {
           : 0,
     },
   ];
+};
+
+export const menuAccountSetting = () => {
+  return [
+    {
+      title: "แก้ไขข้อมูลส่วนตัว",
+      icon: FaEdit,
+    },
+    {
+      title: "การเข้าสู่ระบบและความปลอดภัย",
+      icon: FaLock,
+    },
+  ] as const;
 };

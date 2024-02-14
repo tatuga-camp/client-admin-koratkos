@@ -11,7 +11,7 @@ export async function GetListFarmersService(
   try {
     const cookies = parseCookies();
     const access_token = cookies.access_token;
-
+    if (!input.firstName) throw new Error("firstName is required");
     const farmers = await axios({
       method: "GET",
       url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/farmer/get-all`,
