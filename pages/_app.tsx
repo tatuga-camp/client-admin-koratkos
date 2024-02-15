@@ -8,6 +8,7 @@ import NextTopLoader from "nextjs-toploader";
 import "moment/locale/th";
 import type { AppProps } from "next/app";
 import "moment/locale/th";
+import Layout from "@/components/layout/Layout";
 
 export default function App({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient());
@@ -57,10 +58,13 @@ export default function App({ Component, pageProps }: AppProps) {
   });
   return (
     <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       <PrimeReactProvider>
         <NextTopLoader color="#5C430D" showSpinner={false} />
-        <Component {...pageProps} />
+        <Layout>
+          <Component {...pageProps}  />
+        </Layout>
+        
       </PrimeReactProvider>
     </QueryClientProvider>
   );
