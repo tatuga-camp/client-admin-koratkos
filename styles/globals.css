@@ -9,6 +9,15 @@
   @tailwind components;
   @tailwind utilities;
 }
+
+@layer components {
+  .text-title {
+    @apply text-sm font-semibold text-super-main-color xl:text-lg;
+  }
+  .text-subtitle {
+    @apply w-max rounded-lg bg-slate-200 px-3 py-1 pr-12 text-left text-xs font-semibold text-black xl:text-base;
+  }
+}
 .swal2-popup {
   font-family: "Anuphan", "sans-serif";
 }

@@ -130,3 +130,9 @@ export const MenuFarmerEvaluation = [
     button: "ประเมิน",
   },
 ] as const;
+
+export const menuDisplayMap = [
+  "แผนที่",
+  "แผนที่ทางภูมิศาสตร์",
+  "Google map",
+] as const;
