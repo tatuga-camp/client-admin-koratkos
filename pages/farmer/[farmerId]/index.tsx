@@ -6,7 +6,11 @@ import { User } from "../../../model";
 import DashboardLayout from "../../../layouts/dashboardLayout";
 
 function Index({ userServer }: { userServer: User }) {
-  return <DashboardLayout user={userServer}>Index</DashboardLayout>;
+  return (
+    <DashboardLayout user={userServer}>
+      <header></header>
+    </DashboardLayout>
+  );
 }
 
 export default Index;

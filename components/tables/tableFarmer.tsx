@@ -52,7 +52,10 @@ function TableFarmer({ registerForms }: TableFarmerProps) {
           {registerForms.isLoading
             ? [...Array(5)].map((_, index) => {
                 return (
-                  <tr className=" grid w-full grid-cols-5 items-start justify-center gap-5">
+                  <tr
+                    key={index}
+                    className=" grid w-full grid-cols-5 items-start justify-center gap-5"
+                  >
                     <td className="h-10 w-full animate-pulse rounded-lg bg-slate-400"></td>
                     <td className="h-10 w-full  animate-pulse rounded-lg bg-slate-100"></td>
                     <td className="h-10 w-full  animate-pulse rounded-lg bg-slate-300"></td>
@@ -73,7 +76,10 @@ function TableFarmer({ registerForms }: TableFarmerProps) {
                   ]?.status || "pending",
                 );
                 return (
-                  <tr className=" grid w-full grid-cols-5  items-start justify-center gap-5 ">
+                  <tr
+                    key={registerForm.farmer.id}
+                    className=" grid w-full grid-cols-5  items-start justify-center gap-5 "
+                  >
                     <td className="flex h-11  max-w-full items-center justify-start gap-2 overflow-x-auto  font-semibold">
                       <div className="flex w-max items-center justify-center gap-2 px-4">
                         <div className="relative h-10 w-10 overflow-hidden rounded-full ">

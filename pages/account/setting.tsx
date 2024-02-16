@@ -29,6 +29,7 @@ function Setting({ userServer }: { userServer: User }) {
             {menuAccountSetting().map((menu, index) => {
               return (
                 <button
+                  key={index}
                   onClick={() => setSelectMenu(() => index)}
                   className={`flex w-max items-center justify-center gap-2 rounded-xl transition
                     duration-100 hover:scale-105 active:scale-110
