@@ -15,6 +15,10 @@ import Kos05Form from "../../../components/forms/kos05Form";
 import { useQuery } from "@tanstack/react-query";
 import {
   GetFarmerKos01Service,
+  GetFarmerKos02Service,
+  GetFarmerKos03Service,
+  GetFarmerKos04Service,
+  GetFarmerKos05Service,
   GetFarmerService,
 } from "../../../services/farmer";
 import { useRouter } from "next/router";
@@ -36,11 +40,35 @@ function Index({ userServer }: { userServer: User }) {
     queryFn: () =>
       GetFarmerKos01Service({ farmerId: router.query.farmerId as string }),
   });
+
+  const kos02 = useQuery({
+    queryKey: ["kos02", router.query.farmerId],
+    queryFn: () =>
+      GetFarmerKos02Service({ farmerId: router.query.farmerId as string }),
+  });
+  const kos03 = useQuery({
+    queryKey: ["kos03", router.query.farmerId],
+    queryFn: () =>
+      GetFarmerKos03Service({ farmerId: router.query.farmerId as string }),
+  });
+  const kos04 = useQuery({
+    queryKey: ["kos04", router.query.farmerId],
+    queryFn: () =>
+      GetFarmerKos04Service({ farmerId: router.query.farmerId as string }),
+  });
+
+  const kos05 = useQuery({
+    queryKey: ["kos05", router.query.farmerId],
+    queryFn: () =>
+      GetFarmerKos05Service({ farmerId: router.query.farmerId as string }),
+  });
+
   const farmer = useQuery({
     queryKey: ["farmer", router.query.farmerId],
     queryFn: () =>
       GetFarmerService({ farmerId: router.query.farmerId as string }),
   });
+
   return (
     <DashboardLayout user={userServer}>
       <div className="mt-10 flex w-full flex-col items-center justify-start gap-5">
@@ -59,7 +87,7 @@ function Index({ userServer }: { userServer: User }) {
                 </h2>
               )}
 
-              <h4 className="text-fifth-color flex w-full items-center justify-start gap-2">
+              <h4 className="flex w-full items-center justify-start gap-2 text-fifth-color">
                 <FaPhoneSquare />
                 <span className="text-base font-semibold">เบอร์โทร</span>
                 {farmer.isLoading ? (
@@ -68,7 +96,7 @@ function Index({ userServer }: { userServer: User }) {
                   <span>{farmer.data?.phoneNumber}</span>
                 )}
               </h4>
-              <h4 className="text-fifth-color flex w-full items-center justify-start gap-2">
+              <h4 className="flex w-full items-center justify-start gap-2 text-fifth-color">
                 <FaAddressCard />
 
                 <span className="text-base font-semibold">
@@ -154,10 +182,10 @@ function Index({ userServer }: { userServer: User }) {
         ) : (
           <main className="flex w-full items-center justify-center">
             {selectMenu === 0 && <Kos01Form kos01={kos01} />}
-            {selectMenu === 1 && <Kos02Form />}
-            {selectMenu === 2 && <Kos03Form />}
-            {selectMenu === 3 && <Kos04Form />}
-            {selectMenu === 4 && <Kos05Form />}
+            {selectMenu === 1 && <Kos02Form kos02={kos02} />}
+            {selectMenu === 2 && <Kos03Form kos03={kos03} />}
+            {selectMenu === 3 && <Kos04Form kos04={kos04} />}
+            {selectMenu === 4 && <Kos05Form kos05={kos05} />}
             {selectMenu === 5 && <Kos06Form />}
           </main>
         )}

@@ -22,7 +22,7 @@ function Kos01Form({ kos01 }: Kos01FormProps) {
       {triggerMap && <MapDisplay kos01={kos01} setTriggerMap={setTriggerMap} />}
       <section className="  grid h-max w-full grid-cols-2 gap-5 rounded-lg bg-fourth-color p-5 xl:grid-cols-3">
         <div className="flex flex-col  items-start justify-start gap-2">
-          <h2 className="bg-fifth-color flex h-8 w-60 items-center justify-center rounded-lg text-center text-sm font-semibold text-white xl:text-lg">
+          <h2 className="flex h-8 w-60 items-center justify-center rounded-lg bg-fifth-color text-center text-sm font-semibold text-white xl:text-lg">
             ข้อมูลพื้นฐาน
           </h2>
           <div className="mt-5 flex w-full items-start justify-start gap-2">
@@ -47,7 +47,7 @@ function Kos01Form({ kos01 }: Kos01FormProps) {
           </div>
         </div>
         <div className="flex flex-col items-start justify-start gap-2">
-          <h2 className="bg-fifth-color f flex h-8 w-60 items-center justify-center rounded-lg text-center text-sm font-semibold text-white xl:text-lg">
+          <h2 className="f flex h-8 w-60 items-center justify-center rounded-lg bg-fifth-color text-center text-sm font-semibold text-white xl:text-lg">
             ที่ตั้งสถานที่ผลิตพืชอินทรีย์
           </h2>
           <div className="mt-5 flex w-full items-start justify-start gap-2">
@@ -82,7 +82,7 @@ function Kos01Form({ kos01 }: Kos01FormProps) {
           </div>
         </div>
         <div className="flex flex-col items-start justify-start gap-2">
-          <h2 className="bg-fifth-color flex h-8 w-60 items-center justify-center rounded-lg text-center text-sm font-semibold text-white xl:text-lg">
+          <h2 className="flex h-8 w-60 items-center justify-center rounded-lg bg-fifth-color text-center text-sm font-semibold text-white xl:text-lg">
             วันที่ยื่นขอการรับรอง
           </h2>
           <div className="mt-5 flex w-full items-start justify-start gap-2">
@@ -95,7 +95,7 @@ function Kos01Form({ kos01 }: Kos01FormProps) {
           </div>
         </div>
         <div className="flex flex-col items-start justify-start gap-2 xl:col-span-2">
-          <h2 className="bg-fifth-color flex h-8 w-60 items-center justify-center rounded-lg text-center text-sm font-semibold text-white xl:text-lg">
+          <h2 className="flex h-8 w-60 items-center justify-center rounded-lg bg-fifth-color text-center text-sm font-semibold text-white xl:text-lg">
             กระบวนการผลิต
           </h2>
           <div className="mt-5 flex w-full items-start justify-start gap-2">
@@ -124,9 +124,9 @@ function Kos01Form({ kos01 }: Kos01FormProps) {
         </div>
       </section>
 
-      <section className=" grid h-max w-full grid-cols-3 gap-5 rounded-lg bg-fourth-color p-5">
-        <div className="col-span-1 flex  flex-col items-start justify-start gap-2">
-          <h2 className="bg-fifth-color flex h-8 w-60 items-center justify-center rounded-lg text-center text-sm font-semibold text-white xl:text-lg">
+      <section className=" grid h-max w-full grid-cols-3 gap-5 rounded-lg bg-fourth-color p-5 ">
+        <div className=" flex  h-full w-full flex-col items-start justify-start gap-2">
+          <h2 className="flex h-8 w-52 items-center justify-center rounded-lg bg-fifth-color text-center text-sm font-semibold text-white xl:text-lg">
             ชนิดพืชที่ขอการรับรอง
           </h2>
           <div className="mt-5 flex w-full flex-col items-start justify-start gap-2">
