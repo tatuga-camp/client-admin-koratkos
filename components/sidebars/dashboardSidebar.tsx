@@ -3,8 +3,16 @@ import Link from "next/link";
 import React from "react";
 import { RiShutDownLine } from "react-icons/ri";
 import { menusSidebar } from "../../data/menus";
+import { useQueryClient } from "@tanstack/react-query";
+import { destroyCookie } from "nookies";
 
 function DashboardSidebar() {
+  const queryClient = useQueryClient();
+  const useSignOut = () => {
+    destroyCookie(null, "access_token", { path: "/" });
+    queryClient.removeQueries();
+  };
+
   return (
     <div
       className="sticky top-0  hidden h-screen flex-col items-center justify-between bg-fourth-color
@@ -50,8 +58,9 @@ function DashboardSidebar() {
         </ul>
       </div>
       <Link
-        className="flex flex-col items-center justify-center "
         href="/auth/sign-in"
+        onClick={useSignOut}
+        className="flex flex-col items-center justify-center "
       >
         <div
           className="rounded-full bg-red-600 p-3 text-4xl text-white drop-shadow-lg

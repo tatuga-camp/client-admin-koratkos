@@ -22,6 +22,7 @@ const config: Config = {
         "secondary-color": "#3193A9",
         "third-color": "#F1E4C3",
         "fourth-color": "#FFFFEC",
+        "fifth-color": "#C6A969",
       },
       fontFamily: {
         Anuphan: ["Anuphan", "sans-serif"],

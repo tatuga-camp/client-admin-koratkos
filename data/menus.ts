@@ -9,6 +9,8 @@ import {
   GetAllPendingEvaluationCountService,
   GetAllSuccessEvaluationCountService,
 } from "../services/overview";
+import { FaLock } from "react-icons/fa";
+import { AiOutlineFundView } from "react-icons/ai";
 
 export const menusSidebar = () => {
   return [
@@ -19,7 +21,7 @@ export const menusSidebar = () => {
     },
     {
       title: "การตั้งค่า",
-      href: "/admin/setting",
+      href: "/account/setting",
       icon: IoSettingsOutline,
     },
   ];
@@ -77,3 +79,60 @@ export const statisticMenuCards = (): {
     },
   ];
 };
+
+export const menuAccountSetting = () => {
+  return [
+    {
+      title: "แก้ไขข้อมูลส่วนตัว",
+      icon: FaEdit,
+    },
+    {
+      title: "การเข้าสู่ระบบและความปลอดภัย",
+      icon: FaLock,
+    },
+  ] as const;
+};
+
+export const MenuFarmerEvaluation = [
+  {
+    title: "KOS-01",
+    description: "ใบสมัครขอรับการตรวจ ประเมินมาตรฐานเกษตร อินทรีย์ขั้นพื้นฐาน",
+    button: "ดูข้อมูล",
+    icon: AiOutlineFundView,
+  },
+  {
+    title: "KOS-02",
+    description: "ผังแปลง ขอรับการตรวจประเมิน มาตรฐานเกษตรอินทรีย์ ขั้นพื้นฐาน",
+    button: "ดูข้อมูล",
+    icon: AiOutlineFundView,
+  },
+  {
+    title: "KOS-03",
+    description: "แบบบันทึก กิจกรรมในแปลง ผลิตพืชอินทรีย์",
+    button: "ดูข้อมูล",
+    icon: AiOutlineFundView,
+  },
+  {
+    title: "KOS-04",
+    description: "แบบบันทึก ปัจจัยการผลิตในแปลง ผลิตพืชอินทรีย์",
+    button: "ดูข้อมูล",
+    icon: AiOutlineFundView,
+  },
+  {
+    title: "KOS-05",
+    description: "แบบบันทึก การเก็บเกี่ยวในแปลง ผลิตพืชอินทรีย์",
+    button: "ดูข้อมูล",
+    icon: AiOutlineFundView,
+  },
+  {
+    title: "KOS-06",
+    description: "แบบประเมินเกษตรอินทรีย์ ขั้นพื้นฐาน",
+    button: "ประเมิน",
+  },
+] as const;
+
+export const menuDisplayMap = [
+  "แผนที่",
+  "แผนที่ทางภูมิศาสตร์",
+  "Google map",
+] as const;

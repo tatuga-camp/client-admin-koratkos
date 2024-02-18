@@ -29,3 +29,87 @@ export async function GetUserService({
     throw error?.response?.data;
   }
 }
+
+type RequestUploadProfileUserService = {
+  file: File;
+};
+export async function UploadProfileUserService(
+  input: RequestUploadProfileUserService,
+): Promise<User> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+    const formData = new FormData();
+    formData.append("file", input.file);
+    const user = await axios({
+      method: "PATCH",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/upload-profile`,
+      data: { ...input },
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return user.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
+
+type RequestUpdatePasswordUserService = {
+  password: string;
+  newPassword: string;
+  confirmNewPassword: string;
+};
+export async function UpdatePasswordUserService(
+  input: RequestUpdatePasswordUserService,
+): Promise<User> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+
+    const user = await axios({
+      method: "PATCH",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/update-password`,
+      data: { ...input },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return user.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
+
+type RequestUpdateUserService = {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  organization: string;
+};
+export async function UpdateUserService(
+  input: RequestUpdateUserService,
+): Promise<User> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+
+    const user = await axios({
+      method: "PATCH",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/update`,
+      data: { ...input },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return user.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
