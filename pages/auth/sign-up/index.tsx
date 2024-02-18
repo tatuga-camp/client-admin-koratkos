@@ -1,10 +1,67 @@
 import Sidebar from '@/components/layout/Sidebar';
-import React from 'react'
+import React, { useState } from 'react'
 import {Button, FieldError, Form, Input, Label, TextField} from 'react-aria-components';
 import Checkbox from '@mui/material/Checkbox';
+import Swal from 'sweetalert2'
+import { SignUpService } from '@/services/auth';
+
+type SignUpData = {
+    firstName? : string;
+    lastName? : string;
+    organization? : string;
+    keySignature?: string;
+    email?: string;
+    password? : string;
+    confirmPassword?: string;
+  }
 
 
-const index = () => {
+const Index = () => {
+  const [signUpData,setSignUpData] = useState<SignUpData>();
+  
+  const handleChangeSignUpData = (e:React.ChangeEvent<HTMLInputElement>) => {
+    const {name, value} = e.target;
+
+    setSignUpData((prev) => {
+      return {
+         ...prev,
+         [name]: value
+      }
+    })
+  }
+
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
+    try {
+      e.preventDefault();
+      Swal.fire({
+        title: "กำลังบันทึกข้อมูล",
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      // const update = await SignUpService(
+      // update what? refetch from what? 
+      // )
+      // await user.refetch();
+
+      Swal.fire({
+        title: "บันทึกข้อมูลสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ตกลง"
+      });
+      
+    }catch(error:any){
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: error.message,
+        icon: "error",
+        confirmButtonText: "ตกลง"
+      });
+    }
+  }
+
+
   return (
     <div className='w-screen h-full flex font-Anuphan'>
         {/* Left */}
@@ -17,23 +74,12 @@ const index = () => {
           </section>
 
           
-          <Form className='flex flex-col mt-5 md:mt-3 w-[85%] gap-3'>
-            <TextField name="name-title" type="text" isRequired className="flex flex-col items-center ">
-              <div className='flex gap-4 justify-center items-center mt-6'>
-                <Label className='text-[#597E52] text-xl md:text-base font-semibold'>คำนำหน้า :</Label>
-                <Input className=" border-solid border-[1px] border-slate-300 rounded-lg p-2 md:p-1"/>
-              </div>
-              <div className='w-full flex justify-center'>
-                <FieldError className="mt-2 text-red-600 text-sm w-[90%] text-center" />
-              </div>
-            
-            </TextField>
+          <Form onSubmit={handleSubmit} className='flex flex-col mt-5 md:mt-3 w-[85%] gap-3'>
 
-            {/* ชื่อ จอใหญ่ทำให้เรียงต่อกัน */}
-            <TextField name="first-name" type="text" isRequired className="flex flex-col items-center mt-4 md:mt-2">
+            <TextField name="first-name" type="text" isRequired className="flex flex-col items-center mt-4 md:mt-5">
               <div className='flex flex-col md:flex-row gap-2 justify-start items-start'>
                 <Label className='text-[#597E52] text-xl md:text-base font-semibold '>ชื่อจริง :</Label>
-                <Input className="w-[20rem]  border-solid border-[1px] border-slate-300 rounded-lg p-2 md:p-1"/>
+                <Input onChange={handleChangeSignUpData} className="w-[20rem]  border-solid border-[1px] border-slate-300 rounded-lg px-3 py-2 md:py-1"/>
               </div>
               <div className='w-full flex justify-center'>
                 <FieldError className="mt-2 text-red-600 text-sm w-[90%] text-center" />
@@ -43,7 +89,7 @@ const index = () => {
             <TextField name="last-name" type="text" isRequired className="flex flex-col items-center  md:mt-2">
               <div className='flex flex-col md:flex-row gap-2 justify-start items-start'>
                 <Label className='text-[#597E52] text-xl md:text-base font-semibold'>นามสกุล :</Label>
-                <Input className="w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg p-2 md:p-1"/>
+                <Input onChange={handleChangeSignUpData}  className="w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg  px-3 py-2 md:py-1"/>
               </div>
               <div className='w-full flex justify-center'>
                 <FieldError className="mt-2 text-red-600 text-sm w-[90%] text-center" />
@@ -55,7 +101,7 @@ const index = () => {
             <TextField name="organization" type="text"  className="flex flex-col items-center mt-10 md:mt-6">
               <div className='flex flex-col gap-2 justify-start items-start'>
                 <Label className='text-[#597E52] text-xl md:text-base font-semibold'>หน่วยงาน/องค์กร :</Label>
-                <Input className="md:w-[25rem] w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg p-2 md:p-1"/>
+                <Input onChange={handleChangeSignUpData}  className="md:w-[25rem] w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg  px-3 py-2 md:py-1"/>
               </div>
               <div className='w-full flex justify-center'>
                 <FieldError className="mt-2 text-red-600 text-sm w-[90%] text-center" />
@@ -65,7 +111,7 @@ const index = () => {
             <TextField name="key-signature" type="text"  className="flex flex-col items-center ">
               <div className='flex flex-col gap-2 justify-start items-start'>
                 <Label className='text-[#597E52] text-xl md:text-base font-semibold'>Key Signature :</Label>
-                <Input className="md:w-[25rem] w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg p-2 md:p-1"/>
+                <Input onChange={handleChangeSignUpData}  className="md:w-[25rem] w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg px-3 py-2 md:py-1"/>
               </div>
               <div className='w-full flex justify-center'>
                 <FieldError className="mt-2 text-red-600 text-sm w-[90%] text-center" />
@@ -76,7 +122,7 @@ const index = () => {
             <TextField name="email" type="email" isRequired  className="flex flex-col items-center mt-10 md:mt-6">
               <div className='flex flex-col gap-2 justify-start items-start'>
                 <Label className='text-[#597E52] text-xl md:text-base font-semibold'>E-mail :</Label>
-                <Input className="md:w-[25rem] w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg p-2 md:p-1"/>
+                <Input onChange={handleChangeSignUpData}  className="md:w-[25rem] w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg px-3 py-2 md:py-1"/>
               </div>
               <div className='w-full flex justify-center'>
                 <FieldError className="mt-2 text-red-600 text-sm w-[90%] text-center" />
@@ -86,7 +132,7 @@ const index = () => {
             <TextField name="password" type="password" isRequired  className="flex flex-col items-center ">
               <div className='flex flex-col gap-2 justify-start items-start'>
                 <Label className='text-[#597E52] text-xl md:text-base font-semibold'>รหัสผ่าน :</Label>
-                <Input className="md:w-[25rem] w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg p-2 md:p-1"/>
+                <Input onChange={handleChangeSignUpData}  className="md:w-[25rem] w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg px-3 py-2 md:py-1"/>
               </div>
               <div className='w-full flex justify-center'>
                 <FieldError className="mt-2 text-red-600 text-sm w-[90%] text-center" />
@@ -96,7 +142,7 @@ const index = () => {
             <TextField name="confirm-password" type="password" isRequired  className="flex flex-col items-center ">
               <div className='flex flex-col gap-2 justify-start items-start'>
                 <Label className='text-[#597E52] text-xl md:text-base font-semibold'>ยืนยันรหัสผ่าน :</Label>
-                <Input className="md:w-[25rem] w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg p-2 md:p-1"/>
+                <Input onChange={handleChangeSignUpData}  className="md:w-[25rem] w-[20rem] border-solid border-[1px] border-slate-300 rounded-lg px-3 py-2 md:py-1"/>
               </div>
               <div className='w-full flex justify-center'>
                 <FieldError className="mt-2 text-red-600 text-sm w-[90%] text-center" />
@@ -135,4 +181,4 @@ const index = () => {
   )
 }
 
-export default index
+export default Index

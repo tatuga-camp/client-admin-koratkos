@@ -9,7 +9,7 @@ import Image from 'next/image'
 
 const Sidebar = () => {
   return (
-    <div className='hidden lg:block lg:bg-[#F1E4C3] lg:w-[48%] relative'>
+    <div className='hidden lg:block h-screen lg:bg-[#F1E4C3] lg:w-96 sticky top-0'>
       <div className='flex items-center justify-center'>
         {/* return */}
         <Link href="/auth/sign-up" className='flex flex-col items-center justify-center gap-1 mt-4'>
@@ -25,11 +25,11 @@ const Sidebar = () => {
         
 
         {/* Logo */}
-        <div className='w-[85%] absolute top-[10rem] flex justify-center z-10 '>
+        <div className='w-10/12 absolute top-[7rem] flex justify-center z-10 '>
           <div className='flex flex-col '>
             {/* img */}
             <div className='flex items-end justify-end pr-3 -mb-5'>
-               <div className='relative w-[100px] h-[100px]'>
+               <div className='relative w-[6.25rem] h-[6.25rem]'>
                 <Image src='/ks_logo_photo.png' alt='logo' width={200} height={200} className='object-contain overflow-hidden' />
                 </div>
             </div>

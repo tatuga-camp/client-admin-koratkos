@@ -4,7 +4,7 @@ import Link from 'next/link';
 import React, { useState } from 'react'
 import {Button, FieldError, Form, Input, Label, TextField} from 'react-aria-components';
 
-const index = () => {
+const Index = () => {
     const [isPhone,setIsPhone] = useState<boolean>(false)
   return (
     <div className='w-screen min-h-screen flex font-Anuphan'>
@@ -29,14 +29,14 @@ const index = () => {
                     
                     <section className='flex flex-col items-center -mt-1'>
                         <p className='text-sm lg:text-[0.8rem] w-[18rem] flex flex-col items-start my-2  text-start text-[#3193A9] font-semibold underline '>
-                        <button >กรอกเบอร์โทรศัทพ์เพื่อค้นหา</button>
+                        <button onClick={() => {setIsPhone(!isPhone)}} >เปลี่ยนไปใช้ email</button>
                         {/* ควร toggle ให้กลับไปใส่ email เหมือนเดิมดีไหม?? */}
                         </p>
                     </section>
                     <TextField name="phone" type="tel" isRequired  className="flex flex-col items-center  ">
                             <div className='flex flex-col gap-2 justify-start items-start'>
                                 <Label className='text-[#597E52] text-xl md:text-sm font-semibold'>เบอร์โทรศัพท์ :</Label>
-                                <Input className=" w-[18rem] border-solid border-[1px] text-sm border-slate-300 rounded-lg p-2 md:p-1"/>
+                                <Input className="pl-3 w-[18rem] border-solid border-[1px] text-sm border-slate-300 rounded-lg py-2 md:py-1"/>
                             </div>
                             <div className='w-full flex justify-center'>
                                 <FieldError className="mt-2 text-red-600 text-sm w-[90%] text-center" />
@@ -50,7 +50,7 @@ const index = () => {
                     <TextField name="email" type="email" isRequired  className="flex flex-col items-center  ">
                             <div className='flex flex-col gap-2 justify-start items-start'>
                                 <Label className='text-[#597E52] text-xl md:text-sm font-semibold'>E-mail :</Label>
-                                <Input className=" w-[18rem] border-solid border-[1px] text-sm border-slate-300 rounded-lg p-2 md:p-1"/>
+                                <Input className="pl-3 w-[18rem] border-solid border-[1px] text-sm border-slate-300 rounded-lg py-2 md:py-1"/>
                             </div>
                             <div className='w-full flex justify-center'>
                                 <FieldError className="mt-2 text-red-600 text-sm w-[90%] text-center" />
@@ -99,4 +99,4 @@ const index = () => {
   )
 }
 
-export default index
+export default Index
