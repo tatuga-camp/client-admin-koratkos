@@ -10,7 +10,17 @@ import type { AppProps } from "next/app";
 import "moment/locale/th";
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 1000 * 60 * 60, // 1 hour in ms
+            refetchOnWindowFocus: false, // Disables automatic refetching when browser window is focused.
+          },
+        },
+      }),
+  );
   addLocale("th", {
     firstDayOfWeek: 1,
     dayNames: [

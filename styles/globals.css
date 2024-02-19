@@ -17,6 +17,9 @@
   .text-subtitle {
     @apply w-max rounded-lg bg-slate-200 px-3 py-1 pr-8 text-left text-xs font-semibold text-black xl:text-base;
   }
+  .button-focus {
+    @apply transition duration-100 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-super-main-color focus:ring-offset-2 active:scale-110;
+  }
 }
 .swal2-popup {
   font-family: "Anuphan", "sans-serif";
