@@ -8,7 +8,7 @@ type RequestSignUpService = {
     organization : string;
     phone : string;
     password : string;
-    //createUserKey  - KORAT-KOS-256
+    createUserKey: string;
 }
 
 type ResponseSignUpService = {
