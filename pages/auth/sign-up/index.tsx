@@ -11,6 +11,7 @@ type SignUpData = {
     organization? : string;
     keySignature?: string;
     email?: string;
+    phone? : string;
     password? : string;
     confirmPassword?: string;
   }
@@ -40,16 +41,21 @@ const Index = () => {
         },
       });
 
-      // const update = await SignUpService(
-      // update what? refetch from what? 
-      // )
-      // await user.refetch();
+       const update = await SignUpService({
+        email : signUpData?.email,
+        firstName : signUpData?.firstName,
+        lastName : signUpData?.lastName,
+        organization : signUpData?.organization,
+        phone : signUpData?.phone,
+        password : signUpData?.password,
+       })
 
       Swal.fire({
         title: "บันทึกข้อมูลสำเร็จ",
         icon: "success",
         confirmButtonText: "ตกลง"
       });
+      //signup เสร็จให้เด้งไปหน้า sign-in
       
     }catch(error:any){
       Swal.fire({

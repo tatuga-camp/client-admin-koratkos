@@ -16,14 +16,16 @@ type ResponseSignUpService = {
     user: User;
 }
 
-export async function SignUpService(): Promise<ResponseSignUpService> {
+export async function SignUpService(
+    input : RequestSignUpService
+): Promise<ResponseSignUpService> {
     try {
         const signUp = await axios({
             method: "POST",
             url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/auth/sign-up`,
-            data: {},
+            data: {...input},
             headers: {
-                "Content-Type" : "application/json"
+                "Content-Type" : "application/json",
             },
         })
         return signUp.data;
