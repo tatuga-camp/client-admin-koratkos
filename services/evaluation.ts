@@ -5,6 +5,7 @@ import {
   EvalTopicKos06,
   FormEvaluation,
   ListFormEvaluation,
+  StatusEvaluation,
 } from "../model";
 
 type RequestGetFormEvaluationsService = {
@@ -65,6 +66,42 @@ export async function CrateFormEvaluationService(
   }
 }
 
+type RequestUpdateFormEvaluationService = {
+  query: {
+    formEvaluationId: string;
+    farmerId: string;
+  };
+  body: {
+    reason?: string;
+    status?: StatusEvaluation;
+    approveByUserId?: string;
+  };
+};
+export type ResponseUpdateFormEvaluationService = FormEvaluation;
+export async function UpdateFormEvaluationService(
+  input: RequestUpdateFormEvaluationService,
+): Promise<ResponseUpdateFormEvaluationService> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+    const formEvaluation = await axios({
+      method: "PATCH",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/evaluation/update`,
+      data: {
+        ...input,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return formEvaluation.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
+
 type RequestGetFormEvaluationService = {
   farmerId: string;
   formEvaluationId: string;
@@ -96,6 +133,73 @@ export async function GetFormEvaluationService(
       },
     });
     return formEvaluation.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
+
+type RequestCreateListFormEvaluationService = {
+  status: StatusEvaluation;
+  formEvaluationId: string;
+  farmerId: string;
+  childEvalTopicKos06Id: string;
+  evalTopicKos06Id: string;
+  suggestion: string;
+};
+export type ResponseCreateListFormEvaluationService = ListFormEvaluation;
+export async function CreateListFormEvaluationService(
+  input: RequestCreateListFormEvaluationService,
+): Promise<ResponseCreateListFormEvaluationService> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+    const listFormEvaluation = await axios({
+      method: "POST",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/evaluation/list-evaluation/create`,
+      data: {
+        ...input,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return listFormEvaluation.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
+
+type RequestUpdateListFormEvaluationService = {
+  query: {
+    listFormEvaluationId: string;
+  };
+  body: {
+    status: StatusEvaluation;
+    suggestion: string;
+  };
+};
+export type ResponseUpdateListFormEvaluationService = ListFormEvaluation;
+export async function UpdateListFormEvaluationService(
+  input: RequestUpdateListFormEvaluationService,
+): Promise<ResponseUpdateListFormEvaluationService> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+    const listFormEvaluation = await axios({
+      method: "PATCH",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/evaluation/list-evaluation/update`,
+      data: {
+        ...input,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return listFormEvaluation.data;
   } catch (error: any) {
     console.error(error.response.data);
     throw error?.response?.data;
