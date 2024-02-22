@@ -8,6 +8,8 @@ import NextTopLoader from "nextjs-toploader";
 import "moment/locale/th";
 import type { AppProps } from "next/app";
 import "moment/locale/th";
+import { useRouter } from "next/router";
+import AuthLayout from "@/layouts/authLayout";
 
 export default function App({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient());
@@ -55,12 +57,25 @@ export default function App({ Component, pageProps }: AppProps) {
     today: "วันนี้",
     clear: "ล้าง",
   });
+
+  const router = useRouter();
+  const pageAuth = ['/auth/sign-up', '/auth/sign-in','/auth/forget-password'];
+  const useLayout = pageAuth.includes(router.pathname);
+
+
   return (
     <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       <PrimeReactProvider>
         <NextTopLoader color="#5C430D" showSpinner={false} />
-        <Component {...pageProps} />
+        {useLayout ? (
+          <AuthLayout>
+            <Component {...pageProps} />
+          </AuthLayout>
+        ) : (
+          <Component {...pageProps} />
+        )}
+        
       </PrimeReactProvider>
     </QueryClientProvider>
   );

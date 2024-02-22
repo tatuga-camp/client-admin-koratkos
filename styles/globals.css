@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Anuphan:wght@100;200;300;400;500;600;700&display=swap");
+
 @layer tailwind-base, primereact, tailwind-utilities;
 
 @layer tailwind-base {
@@ -20,4 +21,8 @@
 }
 .swal2-popup {
   font-family: "Anuphan", "sans-serif";
+}
+
+body{
+  background-color: #FFFFEC;
 }
