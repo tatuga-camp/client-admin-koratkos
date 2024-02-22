@@ -34,18 +34,26 @@ export const statisticMenuCards = (): {
   const farmer = useQuery({
     queryKey: ["farmer-number"],
     queryFn: () => GetAllFarmerCountService(),
+    staleTime: 1000 * 6,
+    refetchInterval: 1000 * 6,
   });
   const successEvaluation = useQuery({
     queryKey: ["success-evaluation"],
     queryFn: () => GetAllSuccessEvaluationCountService(),
+    staleTime: 1000 * 6,
+    refetchInterval: 1000 * 6,
   });
   const failEvaluation = useQuery({
     queryKey: ["fail-evaluation"],
     queryFn: () => GetAllFailEvaluationCountService(),
+    staleTime: 1000 * 6,
+    refetchInterval: 1000 * 6,
   });
   const pendingEvaluation = useQuery({
     queryKey: ["pending-evaluation"],
     queryFn: () => GetAllPendingEvaluationCountService(),
+    staleTime: 1000 * 6,
+    refetchInterval: 1000 * 6,
   });
 
   return [

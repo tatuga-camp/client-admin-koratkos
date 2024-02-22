@@ -34,6 +34,8 @@ function Index({ userServer }: { userServer: User }) {
   const plantType = useQuery({
     queryKey: ["plant-types"],
     queryFn: () => GetAllPlantTypeByGroupService(),
+    staleTime: 1000 * 6,
+    refetchInterval: 1000 * 6,
   });
 
   return (
