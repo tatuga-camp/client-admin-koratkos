@@ -12,6 +12,9 @@ import Checkbox from "@mui/material/Checkbox";
 import Swal from "sweetalert2";
 import { SignUpService } from "@/services/auth";
 import { error } from "console";
+import { useRouter } from "next/router";
+
+
 
 type SignUpData = {
   firstName?: string;
@@ -26,6 +29,8 @@ type SignUpData = {
 };
 
 const Index = () => {
+  const route = useRouter();
+
   const [signUpData, setSignUpData] = useState<SignUpData>();
 
   const handleChangeSignUpData = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,6 +67,8 @@ const Index = () => {
         password: signUpData?.password as string,
         createUserKey: signUpData?.keySignature as string,
       });
+
+      route.push({pathname: '/auth/sign-in'})
 
       Swal.fire({
         title: "บันทึกข้อมูลสำเร็จ",
