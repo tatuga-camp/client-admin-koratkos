@@ -12,6 +12,7 @@ import { GetAllReadyRegisterFormByPage } from "../services/register-form";
 import Pagination from "@mui/material/Pagination";
 import { GetAllPlantTypeByGroupService } from "../services/overview";
 import ChartComponent from "../components/charts/chart";
+import Head from "next/head";
 
 function Index({ userServer }: { userServer: User }) {
   const [page, setPage] = useState(1);
@@ -25,7 +26,7 @@ function Index({ userServer }: { userServer: User }) {
     queryFn: () =>
       GetAllReadyRegisterFormByPage({
         page: page,
-        limit: 10,
+        limit: 20,
       }),
     staleTime: 1000 * 6,
     refetchInterval: 1000 * 6,
@@ -40,6 +41,9 @@ function Index({ userServer }: { userServer: User }) {
 
   return (
     <DashboardLayout user={user.data}>
+      <Head>
+        <title>Admin Dashboard</title>
+      </Head>
       <div className="mt-10 flex w-11/12 flex-col items-center justify-start gap-5 ">
         <header className=" grid w-full grid-cols-4 gap-2 px-5">
           {statisticMenuCards().map((list, index) => (

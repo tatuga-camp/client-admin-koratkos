@@ -1,4 +1,4 @@
-import Sidebar from "@/components/layout/Sidebar";
+import Sidebar from "@/components/sidebars/homepageSidebar";
 import React, { useState } from "react";
 import {
   Button,
@@ -13,8 +13,7 @@ import Swal from "sweetalert2";
 import { SignUpService } from "@/services/auth";
 import { error } from "console";
 import { useRouter } from "next/router";
-
-
+import Head from "next/head";
 
 type SignUpData = {
   firstName?: string;
@@ -68,7 +67,7 @@ const Index = () => {
         createUserKey: signUpData?.keySignature as string,
       });
 
-      route.push({pathname: '/auth/sign-in'})
+      route.push({ pathname: "/auth/sign-in" });
 
       Swal.fire({
         title: "บันทึกข้อมูลสำเร็จ",
@@ -86,10 +85,11 @@ const Index = () => {
     }
   };
 
-  console.log(signUpData);
-
   return (
     <div className="flex h-full  font-Anuphan">
+      <Head>
+        <title>ลงทะเบียน</title>
+      </Head>
       {/* Left */}
       <Sidebar />
       {/* right */}

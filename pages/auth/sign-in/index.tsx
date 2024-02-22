@@ -1,5 +1,6 @@
-import Sidebar from "@/components/layout/Sidebar";
+import Sidebar from "@/components/sidebars/homepageSidebar";
 import User from "@/components/svgs/User";
+import Head from "next/head";
 import Link from "next/link";
 import React from "react";
 import {
@@ -14,6 +15,9 @@ import {
 const Index = () => {
   return (
     <div className=" flex min-h-screen font-Anuphan">
+      <Head>
+        <title>เข้าสู่ระบบ</title>
+      </Head>
       {/* Left */}
 
       <Sidebar />

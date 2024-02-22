@@ -69,13 +69,12 @@ export default function App({ Component, pageProps }: AppProps) {
   });
 
   const router = useRouter();
-  const pageAuth = ['/auth/sign-up', '/auth/sign-in','/auth/forget-password'];
+  const pageAuth = ["/auth/sign-up", "/auth/sign-in", "/auth/forget-password"];
   const useLayout = pageAuth.includes(router.pathname);
-
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      <ReactQueryDevtools initialIsOpen={false} />
       <PrimeReactProvider>
         <NextTopLoader color="#5C430D" showSpinner={false} />
         {useLayout ? (
@@ -85,7 +84,6 @@ export default function App({ Component, pageProps }: AppProps) {
         ) : (
           <Component {...pageProps} />
         )}
-        
       </PrimeReactProvider>
     </QueryClientProvider>
   );

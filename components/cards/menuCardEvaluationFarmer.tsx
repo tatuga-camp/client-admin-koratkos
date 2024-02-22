@@ -21,7 +21,7 @@ function MenuCardEvaluationFarmer({
   return (
     <div
       onClick={() => setSelectMenu(() => index)}
-      className={`hover:bg-fifth-color group ${selectMenu === index ? "bg-fifth-color" : "bg-fourth-color "} flex h-full w-full cursor-pointer
+      className={`group hover:bg-fifth-color ${selectMenu === index ? "bg-fifth-color" : "bg-fourth-color "} flex h-full w-full cursor-pointer
        flex-col  items-center justify-around gap-2 rounded-lg p-4 font-Anuphan`}
     >
       <h1 className="text-lg font-semibold text-super-main-color group-hover:text-white xl:text-2xl">

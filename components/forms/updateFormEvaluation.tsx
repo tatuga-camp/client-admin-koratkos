@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import React, { FormEvent, useEffect, useState } from "react";
+import { FaSquarePhone } from "react-icons/fa6";
 import {
   ChildEvalTopicKos06,
   EvalTopicKos06,
@@ -24,6 +25,7 @@ import {
   TextField,
 } from "react-aria-components";
 import {
+  MdEmail,
   MdOutlineRadioButtonChecked,
   MdOutlineRadioButtonUnchecked,
 } from "react-icons/md";
@@ -186,109 +188,122 @@ function UpdateFormEvaluation({
         className="mt-5 flex w-11/12 flex-col items-center justify-center gap-2  text-xl font-semibold text-white 
       "
       >
-        {formEvaluation.data?.topics.map((topic, index) => {
-          return (
-            <section className="grid w-full grid-cols-10 gap-3" key={index}>
-              <div className="sticky top-10 col-span-10 flex items-center justify-start gap-2 rounded-lg bg-secondary-color p-3 font-semibold text-white">
-                {topic.order} {topic.title}
-              </div>
-              {topic.childs.map((child, index) => {
-                return (
-                  <RadioGroup
-                    aria-label="evaluation"
-                    name={child.id}
-                    key={index}
-                    isRequired
-                    onChange={(e) => {
-                      setEvaluationListData((prev) => {
-                        return prev?.map((item) => {
-                          if (item.id === child.id) {
-                            return {
-                              ...item,
-                              listFormEvaluation: {
-                                ...item.listFormEvaluation,
-                                status: e as StatusEvaluation,
-                              },
-                            };
-                          }
-                          return item;
-                        });
-                      });
-                    }}
-                    value={
-                      evaluationListData?.find((item) => item.id === child.id)
-                        ?.listFormEvaluation?.status
-                    }
-                    className="col-span-10 grid w-full grid-cols-10 gap-3"
-                  >
-                    <div className="col-span-6 rounded-lg bg-fourth-color p-5 font-medium text-black">
-                      {child.order} {child.title}
-                    </div>
-                    <Radio
-                      aria-label="approved"
-                      className="col-span-1 flex items-center justify-center rounded-lg bg-fourth-color p-5"
-                      value="approved"
-                    >
-                      {({ isSelected }) => (
-                        <div className="text-4xl text-secondary-color">
-                          {isSelected ? (
-                            <IoIosCheckbox />
-                          ) : (
-                            <IoIosCheckboxOutline />
-                          )}
-                        </div>
-                      )}
-                    </Radio>
-                    <Radio
-                      aria-label="rejected"
-                      className="col-span-1 flex items-center justify-center rounded-lg bg-fourth-color p-5"
-                      value="rejected"
-                    >
-                      {({ isSelected }) => (
-                        <div className="text-4xl text-red-600">
-                          {isSelected ? (
-                            <IoIosCheckbox />
-                          ) : (
-                            <IoIosCheckboxOutline />
-                          )}
-                        </div>
-                      )}
-                    </Radio>
-                    <TextField
-                      onChange={(e) => {
-                        setEvaluationListData((prev) => {
-                          return prev?.map((item) => {
-                            if (item.id === child.id) {
-                              return {
-                                ...item,
-                                listFormEvaluation: {
-                                  ...item.listFormEvaluation,
-                                  suggestion: e,
-                                },
-                              };
-                            }
-                            return item;
+        {formEvaluation.isLoading
+          ? [...new Array(5)].map((list, index) => {
+              return (
+                <div className="grid h-10 w-full animate-pulse grid-cols-10 gap-2">
+                  <div className="col-span-6 h-10 animate-pulse rounded-lg bg-gray-400"></div>
+                  <div className="col-span-1 h-10 animate-pulse rounded-lg bg-gray-300"></div>
+                  <div className="col-span-1 h-10 animate-pulse rounded-lg bg-gray-500"></div>
+                  <div className="col-span-2 h-10 animate-pulse rounded-lg bg-gray-300"></div>
+                </div>
+              );
+            })
+          : formEvaluation.data?.topics.map((topic, index) => {
+              return (
+                <section className="grid w-full grid-cols-10 gap-3" key={index}>
+                  <div className="sticky top-10 col-span-10 flex items-center justify-start gap-2 rounded-lg bg-secondary-color p-3 font-semibold text-white">
+                    {topic.order} {topic.title}
+                  </div>
+                  {topic.childs.map((child, index) => {
+                    return (
+                      <RadioGroup
+                        aria-label="evaluation"
+                        name={child.id}
+                        key={index}
+                        isRequired
+                        onChange={(e) => {
+                          setEvaluationListData((prev) => {
+                            return prev?.map((item) => {
+                              if (item.id === child.id) {
+                                return {
+                                  ...item,
+                                  listFormEvaluation: {
+                                    ...item.listFormEvaluation,
+                                    status: e as StatusEvaluation,
+                                  },
+                                };
+                              }
+                              return item;
+                            });
                           });
-                        });
-                      }}
-                      value={
-                        evaluationListData?.find((item) => item.id === child.id)
-                          ?.listFormEvaluation?.suggestion
-                      }
-                      aria-label="note"
-                      className="col-span-2 flex items-center justify-center rounded-lg bg-fourth-color p-1 text-sm text-black"
-                    >
-                      <TextArea
-                        placeholder="....ข้อเสนอแนะ"
-                        className="h-full max-h-full min-h-full w-full min-w-full max-w-full resize-none border-0 p-2 outline-none"
-                      />
-                    </TextField>
-                  </RadioGroup>
-                );
-              })}
-            </section>
-          );
-        })}
+                        }}
+                        value={
+                          evaluationListData?.find(
+                            (item) => item.id === child.id,
+                          )?.listFormEvaluation?.status
+                        }
+                        className="col-span-10 grid w-full grid-cols-10 gap-3"
+                      >
+                        <div className="col-span-6 rounded-lg bg-fourth-color p-5 font-medium text-black">
+                          {child.order} {child.title}
+                        </div>
+                        <Radio
+                          aria-label="approved"
+                          className="col-span-1 flex items-center justify-center rounded-lg bg-fourth-color p-5"
+                          value="approved"
+                        >
+                          {({ isSelected }) => (
+                            <div className="text-4xl text-secondary-color">
+                              {isSelected ? (
+                                <IoIosCheckbox />
+                              ) : (
+                                <IoIosCheckboxOutline />
+                              )}
+                            </div>
+                          )}
+                        </Radio>
+                        <Radio
+                          aria-label="rejected"
+                          className="col-span-1 flex items-center justify-center rounded-lg bg-fourth-color p-5"
+                          value="rejected"
+                        >
+                          {({ isSelected }) => (
+                            <div className="text-4xl text-red-600">
+                              {isSelected ? (
+                                <IoIosCheckbox />
+                              ) : (
+                                <IoIosCheckboxOutline />
+                              )}
+                            </div>
+                          )}
+                        </Radio>
+                        <TextField
+                          onChange={(e) => {
+                            setEvaluationListData((prev) => {
+                              return prev?.map((item) => {
+                                if (item.id === child.id) {
+                                  return {
+                                    ...item,
+                                    listFormEvaluation: {
+                                      ...item.listFormEvaluation,
+                                      suggestion: e,
+                                    },
+                                  };
+                                }
+                                return item;
+                              });
+                            });
+                          }}
+                          value={
+                            evaluationListData?.find(
+                              (item) => item.id === child.id,
+                            )?.listFormEvaluation?.suggestion
+                          }
+                          aria-label="note"
+                          className="col-span-2 flex items-center justify-center rounded-lg bg-fourth-color p-1 text-sm text-black"
+                        >
+                          <TextArea
+                            placeholder="....ข้อเสนอแนะ"
+                            className="h-full max-h-full min-h-full w-full min-w-full max-w-full resize-none border-0 p-2 outline-none"
+                          />
+                        </TextField>
+                      </RadioGroup>
+                    );
+                  })}
+                </section>
+              );
+            })}
       </main>
       <footer className="mt-5 flex w-full flex-col items-center justify-center gap-5">
         <div className="w-11/12 rounded-lg bg-fifth-color px-3 py-1 text-left text-xl font-semibold text-white ">
@@ -338,6 +353,23 @@ function UpdateFormEvaluation({
               )}
             </Radio>
           </RadioGroup>
+          {formEvaluation.data?.formEvaluation.user && (
+            <div className="flex w-full items-center justify-start gap-5 text-lg font-semibold text-black">
+              <h3>ประเมินโดย</h3>
+              <h3>
+                {formEvaluation.data?.formEvaluation.user.firstName}{" "}
+                {formEvaluation.data?.formEvaluation.user.lastName}
+              </h3>
+              <h3 className="flex items-center justify-start gap-2 text-super-main-color">
+                <MdEmail />
+                {formEvaluation.data?.formEvaluation.user.email}{" "}
+              </h3>
+              <h3 className="flex items-center justify-start gap-2 text-super-main-color">
+                <FaSquarePhone />
+                {formEvaluation.data?.formEvaluation.user.phone}{" "}
+              </h3>
+            </div>
+          )}
           <TextField
             onChange={(e) => {
               setEvaluationData((prev) => {
@@ -357,6 +389,7 @@ function UpdateFormEvaluation({
               className="h-32 w-full resize-none rounded-lg border-0 p-5 text-lg outline-none ring-1 ring-black"
             ></TextArea>
           </TextField>
+
           <Button
             type="submit"
             className="button-focus w-60 rounded-lg bg-super-main-color p-2 text-lg font-semibold text-white"

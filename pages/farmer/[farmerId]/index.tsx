@@ -30,6 +30,7 @@ import {
 } from "react-icons/fa";
 import moment from "moment";
 import Image from "next/image";
+import Head from "next/head";
 
 function Index({ userServer }: { userServer: User }) {
   const [selectMenu, setSelectMenu] = useState<number>(0);
@@ -71,6 +72,9 @@ function Index({ userServer }: { userServer: User }) {
 
   return (
     <DashboardLayout user={userServer}>
+      <Head>
+        <title>เกษตรกร</title>
+      </Head>
       <div className="mt-10 flex w-full flex-col items-center justify-start gap-5">
         <header className="flex w-full flex-col items-center gap-5">
           <div className="flex h-40 w-11/12 justify-between rounded-lg bg-fourth-color p-5">
@@ -147,46 +151,58 @@ function Index({ userServer }: { userServer: User }) {
                 <div className="h-5 w-20 animate-pulse rounded-lg bg-gray-100"></div>
               ) : (
                 <h2 className="text-sm font-bold text-super-main-color">
-                  {moment(farmer.data?.register.summitEvaluationDate).format(
+                  {moment(farmer.data?.register?.summitEvaluationDate).format(
                     "DD/MMMM/YYYY",
                   )}
                 </h2>
               )}
             </div>
           </div>
-          <nav className="grid h-40 w-11/12 grid-cols-6 place-items-center gap-3">
-            {MenuFarmerEvaluation.map((menu, index) => {
-              return (
-                <MenuCardEvaluationFarmer
-                  selectMenu={selectMenu}
-                  setSelectMenu={setSelectMenu}
-                  index={index}
-                  card={menu}
-                  key={index}
-                />
-              );
-            })}
-          </nav>
+
+          {farmer.data?.register && (
+            <nav className="grid h-40 w-11/12 grid-cols-6 place-items-center gap-3">
+              {MenuFarmerEvaluation.map((menu, index) => {
+                return (
+                  <MenuCardEvaluationFarmer
+                    selectMenu={selectMenu}
+                    setSelectMenu={setSelectMenu}
+                    index={index}
+                    card={menu}
+                    key={index}
+                  />
+                );
+              })}
+            </nav>
+          )}
         </header>
-        {kos01.isLoading ? (
-          <div className=" grid h-96 w-11/12 animate-pulse grid-cols-3 gap-5 rounded-lg bg-gray-50 p-5">
-            {[...new Array(5)].map((_, index) => {
-              return (
-                <div
-                  className="h-full w-full animate-pulse rounded-lg bg-slate-200"
-                  key={index}
-                ></div>
-              );
-            })}
-          </div>
+
+        {farmer.data?.register ? (
+          <main className="w-full">
+            {kos01.isLoading ? (
+              <div className=" grid h-96 w-11/12 animate-pulse grid-cols-3 gap-5 rounded-lg bg-gray-50 p-5">
+                {[...new Array(5)].map((_, index) => {
+                  return (
+                    <div
+                      className="h-full w-full animate-pulse rounded-lg bg-slate-200"
+                      key={index}
+                    ></div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex w-full items-center justify-center">
+                {selectMenu === 0 && <Kos01Form kos01={kos01} />}
+                {selectMenu === 1 && <Kos02Form kos02={kos02} />}
+                {selectMenu === 2 && <Kos03Form kos03={kos03} />}
+                {selectMenu === 3 && <Kos04Form kos04={kos04} />}
+                {selectMenu === 4 && <Kos05Form kos05={kos05} />}
+                {selectMenu === 5 && <Kos06Form />}
+              </div>
+            )}
+          </main>
         ) : (
-          <main className="flex w-full items-center justify-center">
-            {selectMenu === 0 && <Kos01Form kos01={kos01} />}
-            {selectMenu === 1 && <Kos02Form kos02={kos02} />}
-            {selectMenu === 2 && <Kos03Form kos03={kos03} />}
-            {selectMenu === 3 && <Kos04Form kos04={kos04} />}
-            {selectMenu === 4 && <Kos05Form kos05={kos05} />}
-            {selectMenu === 5 && <Kos06Form />}
+          <main className="text-lg font-semibold">
+            เกษตรกรยังไม่ได้ส่งคำขอประเมิน
           </main>
         )}
       </div>

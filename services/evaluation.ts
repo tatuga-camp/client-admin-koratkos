@@ -6,6 +6,7 @@ import {
   FormEvaluation,
   ListFormEvaluation,
   StatusEvaluation,
+  User,
 } from "../model";
 
 type RequestGetFormEvaluationsService = {
@@ -107,7 +108,7 @@ type RequestGetFormEvaluationService = {
   formEvaluationId: string;
 };
 export type ResponseGetFormEvaluationService = {
-  formEvaluation: FormEvaluation;
+  formEvaluation: FormEvaluation & { user: User };
 } & {
   topics: (EvalTopicKos06 & {
     childs: (ChildEvalTopicKos06 & {

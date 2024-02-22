@@ -66,14 +66,12 @@ function TableFarmer({ registerForms }: TableFarmerProps) {
               })
             : registerForms.data?.data.map((registerForm) => {
                 const summitDate = moment(
-                  registerForm.registerForm.summitEvaluationDate,
+                  registerForm.registerForm?.summitEvaluationDate,
                 )
                   .locale("th")
                   .format("DD/MMMM/YYYY");
                 const status = statusEvaluation(
-                  registerForm.registerForm.forms[
-                    registerForm.registerForm.forms.length - 1
-                  ]?.status || "pending",
+                  registerForm.registerForm?.status,
                 );
                 return (
                   <tr
@@ -82,7 +80,7 @@ function TableFarmer({ registerForms }: TableFarmerProps) {
                   >
                     <td className="flex h-11  max-w-full items-center justify-start gap-2 overflow-x-auto  font-semibold">
                       <div className="flex w-max items-center justify-center gap-2 px-4">
-                        <div className="relative h-10 w-10 overflow-hidden rounded-full ">
+                        <div className="relative h-8 w-8 overflow-hidden rounded-full ">
                           <Image
                             src={registerForm.farmer.picture}
                             fill
@@ -91,7 +89,7 @@ function TableFarmer({ registerForms }: TableFarmerProps) {
                           />
                         </div>
 
-                        <span className=" w-max ">
+                        <span className=" w-max text-sm ">
                           {registerForm.farmer.firstName}{" "}
                           {registerForm.farmer.lastName}
                         </span>
@@ -101,13 +99,21 @@ function TableFarmer({ registerForms }: TableFarmerProps) {
                       {registerForm.farmer.phoneNumber}
                     </td>
                     <td
-                      className="flex h-10 w-full items-center  justify-center gap-2 rounded-lg
-                     bg-secondary-color font-semibold  text-white"
+                      className={`flex h-10 w-full items-center  justify-center gap-2 rounded-lg
+                     ${
+                       registerForm?.registerForm?.status === "pending"
+                         ? "bg-secondary-color"
+                         : registerForm?.registerForm?.status === "approved"
+                           ? "bg-green-700"
+                           : registerForm?.registerForm?.status === "rejected"
+                             ? "bg-red-700"
+                             : "bg-gray-600"
+                     } font-semibold  text-white`}
                     >
-                      {status}
+                      {registerForm.registerForm ? status : "ยังไม่ยื่นคำขอ"}
                     </td>
                     <td className="flex h-10 w-full items-center justify-center gap-2 text-sm font-semibold  lg:text-base">
-                      {summitDate}
+                      {registerForm.registerForm ? summitDate : "-"}
                     </td>
 
                     <td
