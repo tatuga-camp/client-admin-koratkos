@@ -2,7 +2,7 @@ import Sidebar from "@/components/sidebars/homepageSidebar";
 import User from "@/components/svgs/User";
 import Head from "next/head";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import {
   Button,
   FieldError,
@@ -11,8 +11,77 @@ import {
   Label,
   TextField,
 } from "react-aria-components";
+import Swal from "sweetalert2";
+import { setCookie } from "nookies";
+import { useRouter } from "next/router";
+import { SignInService } from "../../../services/auth";
+
+type SignInData = {
+  email?: string;
+  password?: string;
+};
 
 const Index = () => {
+  const route = useRouter();
+
+  const [SingInData, setSignInData] = useState<SignInData>({
+    email: "",
+    password: "",
+  });
+
+  const handleChangeSingInForm = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    setSignInData((prev) => {
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
+  };
+
+  const handleSubmitSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    try {
+      e.preventDefault();
+
+      Swal.fire({
+        title: "กำลังเข้าสู่ระบบ",
+        html: "กรุณารอสักครู่",
+        timerProgressBar: true,
+        allowEscapeKey: false,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const signIn = await SignInService({
+        email: SingInData.email as string,
+        password: SingInData.password as string,
+      });
+
+      setCookie(null, "access_token", signIn.access_token, {
+        maxAge: 2 * 24 * 60 * 60, // Cookie expiration time in seconds (e.g., 30 days)
+        path: "/", // Cookie path
+      });
+
+      route.push("/");
+      Swal.fire({
+        title: "เข้าสู่ระบบสำเร็จ",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error: any) {
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: error.message,
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  };
+
   return (
     <div className=" flex min-h-screen font-Anuphan">
       <Head>
@@ -38,7 +107,10 @@ const Index = () => {
             <User />
           </div>
 
-          <Form className="flex w-[85%] flex-col gap-5 md:mt-1 lg:gap-2">
+          <Form
+            onSubmit={handleSubmitSignIn}
+            className="flex w-[85%] flex-col gap-5 md:mt-1 lg:gap-2"
+          >
             {/* email password */}
             <TextField
               name="email"
@@ -50,7 +122,10 @@ const Index = () => {
                 <Label className="text-xl font-semibold text-[#597E52] md:text-sm">
                   E-mail :
                 </Label>
-                <Input className=" w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 text-sm md:py-1" />
+                <Input
+                  onChange={handleChangeSingInForm}
+                  className=" w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 text-sm md:py-1"
+                />
               </div>
               <div className="flex w-full justify-center">
                 <FieldError className="mt-2 w-[90%] text-center text-sm text-red-600" />
@@ -67,7 +142,10 @@ const Index = () => {
                 <Label className="text-xl font-semibold text-[#597E52] md:text-sm">
                   รหัสผ่าน :
                 </Label>
-                <Input className=" w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 text-sm md:py-1" />
+                <Input
+                  onChange={handleChangeSingInForm}
+                  className=" w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 text-sm md:py-1"
+                />
               </div>
               <div className="flex w-full justify-center">
                 <FieldError className="mt-2 w-[90%] text-center text-sm text-red-600" />
