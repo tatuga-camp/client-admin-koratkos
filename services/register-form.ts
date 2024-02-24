@@ -5,11 +5,17 @@ import {
   FormEvaluation,
   Pagination,
   RegisterFormEvaluation,
+  StatusEvaluation,
 } from "../model";
 
-type RequestGetAllReadyRegisterFormByPage = {
+export type RequestGetAllReadyRegisterFormByPage = {
   page: number;
   limit: number;
+  status?: StatusEvaluation | "all";
+  firstName?: string;
+  orderBy?: {
+    summitEvaluationDate: "asc" | "desc";
+  };
 };
 export type ResponseGetAllRegisterFormaEvaluation = Pagination<{
   farmer: Farmer;
@@ -21,11 +27,12 @@ export async function GetAllReadyRegisterFormByPage(
   try {
     const cookies = parseCookies();
     const access_token = cookies.access_token;
-
+    if (input.status === null) delete input.status;
+    if (input.firstName === "") delete input.firstName;
     const farmer = await axios({
-      method: "GET",
+      method: "POST",
       url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/evaluation/register-form/get-all`,
-      params: {
+      data: {
         ...input,
       },
       headers: {
