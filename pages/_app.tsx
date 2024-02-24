@@ -9,7 +9,6 @@ import "moment/locale/th";
 import type { AppProps } from "next/app";
 import "moment/locale/th";
 import { useRouter } from "next/router";
-import AuthLayout from "@/layouts/authLayout";
 
 export default function App({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(
@@ -77,13 +76,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <ReactQueryDevtools initialIsOpen={false} />
       <PrimeReactProvider>
         <NextTopLoader color="#5C430D" showSpinner={false} />
-        {useLayout ? (
-          <AuthLayout>
-            <Component {...pageProps} />
-          </AuthLayout>
-        ) : (
-          <Component {...pageProps} />
-        )}
+        <Component {...pageProps} />
       </PrimeReactProvider>
     </QueryClientProvider>
   );

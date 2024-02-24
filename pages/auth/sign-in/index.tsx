@@ -1,4 +1,3 @@
-import Sidebar from "@/components/sidebars/homepageSidebar";
 import User from "@/components/svgs/User";
 import Head from "next/head";
 import Link from "next/link";
@@ -15,6 +14,7 @@ import Swal from "sweetalert2";
 import { setCookie } from "nookies";
 import { useRouter } from "next/router";
 import { SignInService } from "../../../services/auth";
+import HomepageSidebar from "../../../components/sidebars/homepageSidebar";
 
 type SignInData = {
   email?: string;
@@ -89,7 +89,7 @@ const Index = () => {
       </Head>
       {/* Left */}
 
-      <Sidebar />
+      <HomepageSidebar />
 
       {/* Right */}
       <div className="flex h-full w-full flex-col items-center lg:mt-6 lg:justify-center">
@@ -109,7 +109,7 @@ const Index = () => {
 
           <Form
             onSubmit={handleSubmitSignIn}
-            className="flex w-[85%] flex-col gap-5 md:mt-1 lg:gap-2"
+            className="flex w-10/12 flex-col items-center gap-5 md:mt-1 lg:gap-2"
           >
             {/* email password */}
             <TextField
@@ -124,7 +124,8 @@ const Index = () => {
                 </Label>
                 <Input
                   onChange={handleChangeSingInForm}
-                  className=" w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 text-sm md:py-1"
+                  className="h-10 w-80 rounded-lg border-[1px] border-solid border-slate-300
+                   px-3 py-2 text-lg md:py-1"
                 />
               </div>
               <div className="flex w-full justify-center">
@@ -144,7 +145,8 @@ const Index = () => {
                 </Label>
                 <Input
                   onChange={handleChangeSingInForm}
-                  className=" w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 text-sm md:py-1"
+                  className="h-10 w-80 rounded-lg border-[1px] border-solid border-slate-300
+                  px-3 py-2 text-lg md:py-1"
                 />
               </div>
               <div className="flex w-full justify-center">
@@ -152,25 +154,28 @@ const Index = () => {
               </div>
             </TextField>
 
-            <section className="-mt-2 flex flex-col items-center">
-              <p className="my-2 flex w-[18rem] flex-col items-start text-start text-base font-semibold text-[#3193A9] underline lg:text-[0.7rem] ">
-                <Link href="/auth/forget-password">
-                  <button className="underline">ลืมรหัสผ่าน?</button>
-                </Link>
-              </p>
-            </section>
-
-            {/* submit ไปแล้ว ขึ้นalertด้วย */}
-            <div className="flex justify-center">
-              <Button
-                type="submit"
-                className="mt-5 w-[13rem] rounded-full bg-[#597E52] p-3 text-center 
+            <Button
+              type="submit"
+              className="mt-5 w-60 rounded-full bg-[#597E52] p-1 py-2 text-center 
               text-xl font-semibold text-white drop-shadow-lg duration-300 hover:bg-[#81b077] md:text-base"
-              >
-                ลงทะเบียน
-              </Button>
-            </div>
+            >
+              ลงทะเบียน
+            </Button>
           </Form>
+          <section className="mt-2 flex w-60 items-center  justify-between">
+            <Link
+              className="text-sm font-medium text-blue-500"
+              href="/auth/forget-password"
+            >
+              <button className="underline">ลืมรหัสผ่าน?</button>
+            </Link>
+            <Link
+              className="text-sm font-medium text-blue-500"
+              href="/auth/sign-up"
+            >
+              <button className="underline">ไม่มีบัญชี?</button>
+            </Link>
+          </section>
         </div>
       </div>
     </div>

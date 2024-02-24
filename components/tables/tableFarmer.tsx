@@ -1,31 +1,41 @@
 import { UseQueryResult } from "@tanstack/react-query";
 import React from "react";
-import { ResponseGetAllRegisterFormaEvaluation } from "../../services/register-form";
+import {
+  RequestGetAllReadyRegisterFormByPage,
+  ResponseGetAllRegisterFormaEvaluation,
+} from "../../services/register-form";
 import Image from "next/image";
 import moment from "moment";
 import { MdAddChart } from "react-icons/md";
 import { BiNoEntry } from "react-icons/bi";
 import Link from "next/link";
+import { FaSortAmountDown, FaSortAmountUpAlt } from "react-icons/fa";
+import { StatusEvaluation } from "../../model";
 
 type TableFarmerProps = {
   registerForms: UseQueryResult<ResponseGetAllRegisterFormaEvaluation, Error>;
+  setRegisterFormsQuery: React.Dispatch<
+    React.SetStateAction<RequestGetAllReadyRegisterFormByPage>
+  >;
+  registerFormsQuery: RequestGetAllReadyRegisterFormByPage;
 };
 
-const statusEvaluation = (
-  status: "pending" | "evaluating" | "approved" | "rejected",
-) => {
+const statusEvaluation = (status: StatusEvaluation) => {
   switch (status) {
     case "pending":
       return "รอการประเมิน";
-    case "evaluating":
-      return "กำลังประเมิน";
+
     case "approved":
       return "ผ่านการประเมิน";
     case "rejected":
       return "ไม่ผ่านการประเมิน";
   }
 };
-function TableFarmer({ registerForms }: TableFarmerProps) {
+function TableFarmer({
+  registerForms,
+  setRegisterFormsQuery,
+  registerFormsQuery,
+}: TableFarmerProps) {
   return (
     <div className="w-full rounded-lg bg-fourth-color p-5">
       <table className="w-full  ">
@@ -40,8 +50,29 @@ function TableFarmer({ registerForms }: TableFarmerProps) {
             <td className="w-full rounded-lg bg-super-main-color py-1 text-center font-semibold text-white">
               สถานะ
             </td>
-            <td className="w-full rounded-lg bg-super-main-color py-1 text-center font-semibold text-white">
+            <td
+              onClick={() =>
+                setRegisterFormsQuery((prev) => {
+                  return {
+                    ...prev,
+                    orderBy: {
+                      summitEvaluationDate:
+                        prev.orderBy?.summitEvaluationDate === "asc"
+                          ? "desc"
+                          : "asc",
+                    },
+                  };
+                })
+              }
+              className="flex w-full cursor-pointer select-none items-center justify-center gap-1 rounded-lg bg-super-main-color py-1 text-center
+             font-semibold text-white transition duration-100 active:scale-110"
+            >
               วันยื่นคำขอ
+              {registerFormsQuery.orderBy?.summitEvaluationDate === "asc" ? (
+                <FaSortAmountDown />
+              ) : (
+                <FaSortAmountUpAlt />
+              )}
             </td>
             <td className="w-full rounded-lg bg-super-main-color py-1 text-center font-semibold text-white">
               การประเมิน
@@ -112,7 +143,7 @@ function TableFarmer({ registerForms }: TableFarmerProps) {
                     >
                       {registerForm.registerForm ? status : "ยังไม่ยื่นคำขอ"}
                     </td>
-                    <td className="flex h-10 w-full items-center justify-center gap-2 text-sm font-semibold  lg:text-base">
+                    <td className="flex h-10 w-full items-center justify-center gap-2 text-xs font-semibold  lg:text-sm xl:text-base">
                       {registerForm.registerForm ? summitDate : "-"}
                     </td>
 

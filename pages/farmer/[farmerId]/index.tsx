@@ -3,7 +3,6 @@ import { parseCookies } from "nookies";
 import React, { useState } from "react";
 import { GetUserService } from "../../../services/user";
 import { User } from "../../../model";
-import DashboardLayout from "../../../layouts/dashboardLayout";
 import { MenuFarmerEvaluation } from "../../../data/menus";
 import MenuCardEvaluationFarmer from "../../../components/cards/menuCardEvaluationFarmer";
 import Kos01Form from "../../../components/forms/kos01Form";
@@ -24,6 +23,7 @@ import {
 import { useRouter } from "next/router";
 import {
   FaAddressCard,
+  FaFileDownload,
   FaPhoneSquare,
   FaRegEye,
   FaRegEyeSlash,
@@ -31,6 +31,9 @@ import {
 import moment from "moment";
 import Image from "next/image";
 import Head from "next/head";
+import DashboardLayout from "../../../layouts/dashboardLayout";
+import Swal from "sweetalert2";
+import { DowloadPDFService } from "../../../services/dowloadFile";
 
 function Index({ userServer }: { userServer: User }) {
   const [selectMenu, setSelectMenu] = useState<number>(0);
@@ -70,6 +73,35 @@ function Index({ userServer }: { userServer: User }) {
       GetFarmerService({ farmerId: router.query.farmerId as string }),
   });
 
+  const handleDownloadPDF = async () => {
+    try {
+      Swal.fire({
+        icon: "info",
+        title: "กำลังดาวโหลดเอกสาร",
+        text: "กรุณารอสักครู่",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+      const download = await DowloadPDFService({
+        farmerId: router.query.farmerId as string,
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "ดาวโหลดเอกสารสำเร็จ",
+        text: "เอกสารได้ถูกดาวโหลดเรียบร้อยแล้ว",
+      });
+    } catch (error: any) {
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: error.message,
+      });
+    }
+  };
   return (
     <DashboardLayout user={userServer}>
       <Head>
@@ -77,7 +109,7 @@ function Index({ userServer }: { userServer: User }) {
       </Head>
       <div className="mt-10 flex w-full flex-col items-center justify-start gap-5">
         <header className="flex w-full flex-col items-center gap-5">
-          <div className="flex h-40 w-11/12 justify-between rounded-lg bg-fourth-color p-5">
+          <div className="flex h-max w-11/12 justify-between rounded-lg bg-fourth-color p-5">
             <div className="flex w-96 flex-col items-start justify-center">
               <h1 className="text-2xl font-semibold text-super-main-color">
                 ผู้รับการประเมิน :
@@ -130,6 +162,12 @@ function Index({ userServer }: { userServer: User }) {
                   />
                 )}
               </h4>
+              <button
+                onClick={handleDownloadPDF}
+                className="button-focus flex items-center justify-center gap-2 rounded-lg bg-fifth-color px-5 py-1 text-white"
+              >
+                ดาวโหลดเอกสาร <FaFileDownload />
+              </button>
             </div>
             <div className="flex w-max flex-col items-end justify-center">
               <div className="relative h-20 w-20 overflow-hidden rounded-full">

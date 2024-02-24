@@ -1,4 +1,3 @@
-import Sidebar from "@/components/sidebars/homepageSidebar";
 import React, { useState } from "react";
 import {
   Button,
@@ -14,6 +13,7 @@ import { SignUpService } from "@/services/auth";
 import { error } from "console";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import HomepageSidebar from "../../../components/sidebars/homepageSidebar";
 
 type SignUpData = {
   firstName?: string;
@@ -91,7 +91,7 @@ const Index = () => {
         <title>ลงทะเบียน</title>
       </Head>
       {/* Left */}
-      <Sidebar />
+      <HomepageSidebar />
       {/* right */}
       <div className="m-0 flex w-full flex-col items-center justify-center ">
         <div className="m-0 my-8 flex w-full flex-col items-center ">
