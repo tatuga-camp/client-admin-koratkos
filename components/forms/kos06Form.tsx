@@ -56,7 +56,10 @@ function Kos06Form() {
           {formEvaluations.isLoading
             ? [...new Array(3)].map((list, index) => {
                 return (
-                  <div className="h-8 w-20 animate-pulse rounded-md bg-gray-600"></div>
+                  <div
+                    key={index}
+                    className="h-8 w-20 animate-pulse rounded-md bg-gray-600"
+                  ></div>
                 );
               })
             : menuEvaluation?.map((item, index) => (

@@ -15,7 +15,10 @@ function Kos04Form({ kos04 }: Kos04FormProps) {
           .locale("th")
           .format("DD/MM/YYYY");
         return (
-          <section className="flex h-max w-full flex-col gap-3 rounded-lg bg-[#F1E4C3] p-5">
+          <section
+            key={index}
+            className="flex h-max w-full flex-col gap-3 rounded-lg bg-[#F1E4C3] p-5"
+          >
             <header className="flex items-center justify-between">
               <div className="rounded-lg bg-[#502D16] px-4 py-1 text-xl font-semibold text-white">
                 ปัจจัยที่ {index + 1}

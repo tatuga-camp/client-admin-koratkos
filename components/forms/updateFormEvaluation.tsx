@@ -191,7 +191,10 @@ function UpdateFormEvaluation({
         {formEvaluation.isLoading
           ? [...new Array(5)].map((list, index) => {
               return (
-                <div className="grid h-10 w-full animate-pulse grid-cols-10 gap-2">
+                <div
+                  key={index}
+                  className="grid h-10 w-full animate-pulse grid-cols-10 gap-2"
+                >
                   <div className="col-span-6 h-10 animate-pulse rounded-lg bg-gray-400"></div>
                   <div className="col-span-1 h-10 animate-pulse rounded-lg bg-gray-300"></div>
                   <div className="col-span-1 h-10 animate-pulse rounded-lg bg-gray-500"></div>
