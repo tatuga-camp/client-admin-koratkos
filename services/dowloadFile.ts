@@ -7,8 +7,8 @@ type RequestDowloadPDFService = {
 export async function DowloadPDFService(input: RequestDowloadPDFService) {
   const cookies = parseCookies();
   const access_token = cookies.access_token;
-  const formEvaluations = await axios({
-    method: "POST",
+  const html = await axios({
+    method: "GET",
     url: `${process.env.NEXT_PUBLIC_SERVER_URL}/file-generate/download-pdf`,
     params: {
       ...input,
