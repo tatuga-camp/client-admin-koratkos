@@ -40,7 +40,6 @@ export async function GetFormEvaluationsService(
 type RequestCrateFormEvaluationService = {
   farmerId: string;
   evaluatedDate: string;
-  docKos06Id: string;
 };
 export type ResponseCrateFormEvaluationService = FormEvaluation;
 export async function CrateFormEvaluationService(
@@ -54,6 +53,7 @@ export async function CrateFormEvaluationService(
       url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/evaluation/create`,
       data: {
         ...input,
+        docKos06Id: process.env.NEXT_PUBLIC_DOC_KOS06_ID,
       },
       headers: {
         "Content-Type": "application/json",

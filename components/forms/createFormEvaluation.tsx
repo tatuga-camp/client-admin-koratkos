@@ -33,7 +33,6 @@ function CreateFormEvaluation({
       const create = await CrateFormEvaluationService({
         farmerId: router.query.farmerId as string,
         evaluatedDate: new Date().toISOString(),
-        docKos06Id: "65d195462b9a9bf818e7ce05",
       });
       await formEvaluations.refetch();
       Swal.fire({
