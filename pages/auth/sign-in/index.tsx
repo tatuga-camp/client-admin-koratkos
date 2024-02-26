@@ -1,7 +1,7 @@
 import User from "@/components/svgs/User";
 import { SignInService } from "@/services/auth";
 import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   FieldError,
@@ -13,6 +13,8 @@ import {
 import Swal from "sweetalert2";
 import { setCookie } from "nookies";
 import { useRouter } from "next/router";
+import Head from "next/head";
+import HomepageSidebar from "@/components/sidebars/homepageSidebar";
 
 type SignInData = {
   email?: string;
@@ -20,6 +22,66 @@ type SignInData = {
 };
 
 const Index = () => {
+  const route = useRouter();
+
+  const [SingInData, setSignInData] = useState<SignInData>({
+    email: "",
+    password: "",
+  });
+
+  const handleChangeSingInForm = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    setSignInData((prev) => {
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
+  };
+
+  const handleSubmitSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    try {
+      e.preventDefault();
+
+      Swal.fire({
+        title: "กำลังเข้าสู่ระบบ",
+        html: "กรุณารอสักครู่",
+        timerProgressBar: true,
+        allowEscapeKey: false,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const signIn = await SignInService({
+        email: SingInData.email as string,
+        password: SingInData.password as string,
+      });
+
+      setCookie(null, "access_token", signIn.access_token, {
+        maxAge: 2 * 24 * 60 * 60, // Cookie expiration time in seconds (e.g., 30 days)
+        path: "/", // Cookie path
+      });
+
+      route.push("/");
+      Swal.fire({
+        title: "เข้าสู่ระบบสำเร็จ",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error: any) {
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: error.message,
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  };
+
   return (
     <div className=" flex min-h-screen font-Anuphan">
       <Head>
