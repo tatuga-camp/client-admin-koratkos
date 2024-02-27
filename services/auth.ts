@@ -66,3 +66,32 @@ export async function SignInService(
         throw error?.response?.data;
     }
 }
+
+type RequestForgetPasswordService = {
+    email : string;
+}
+
+type ResponseForgetPasswordService = {
+    url: string;
+    user: User;
+}
+
+export async function ForgetPasswordService(
+    input: RequestForgetPasswordService
+): Promise<ResponseForgetPasswordService>{
+    try {
+        const signIn = await axios({
+            method: "POST",
+            url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/auth/forget-password`,
+            data: {...input},
+            headers: {
+                "Content-Type" : "application/json",
+            },
+        })
+        return signIn.data;
+
+    }catch(error:any){
+        console.error(error.response.data);
+        throw error?.response?.data;
+    }
+}

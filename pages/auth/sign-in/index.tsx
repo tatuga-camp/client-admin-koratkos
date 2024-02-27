@@ -1,7 +1,7 @@
 import User from "@/components/svgs/User";
-import Head from "next/head";
+import { SignInService } from "@/services/auth";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   FieldError,
@@ -13,8 +13,8 @@ import {
 import Swal from "sweetalert2";
 import { setCookie } from "nookies";
 import { useRouter } from "next/router";
-import { SignInService } from "../../../services/auth";
-import HomepageSidebar from "../../../components/sidebars/homepageSidebar";
+import Head from "next/head";
+import HomepageSidebar from "@/components/sidebars/homepageSidebar";
 
 type SignInData = {
   email?: string;
@@ -109,7 +109,7 @@ const Index = () => {
 
           <Form
             onSubmit={handleSubmitSignIn}
-            className="flex w-10/12 flex-col items-center gap-5 md:mt-1 lg:gap-2"
+            className="flex w-[85%] flex-col gap-5 md:mt-1 lg:gap-2"
           >
             {/* email password */}
             <TextField
@@ -124,8 +124,7 @@ const Index = () => {
                 </Label>
                 <Input
                   onChange={handleChangeSingInForm}
-                  className="h-10 w-80 rounded-lg border-[1px] border-solid border-slate-300
-                   px-3 py-2 text-lg md:py-1"
+                  className=" w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 text-sm md:py-1"
                 />
               </div>
               <div className="flex w-full justify-center">
@@ -145,8 +144,7 @@ const Index = () => {
                 </Label>
                 <Input
                   onChange={handleChangeSingInForm}
-                  className="h-10 w-80 rounded-lg border-[1px] border-solid border-slate-300
-                  px-3 py-2 text-lg md:py-1"
+                  className=" w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 text-sm md:py-1"
                 />
               </div>
               <div className="flex w-full justify-center">

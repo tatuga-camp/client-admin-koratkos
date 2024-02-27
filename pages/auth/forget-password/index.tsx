@@ -1,5 +1,6 @@
 import Sidebar from "@/components/sidebars/homepageSidebar";
 import User from "@/components/svgs/User";
+import { ForgetPasswordService } from "@/services/auth";
 import Link from "next/link";
 import React, { useState } from "react";
 import {
@@ -10,9 +11,70 @@ import {
   Label,
   TextField,
 } from "react-aria-components";
+import Swal from "sweetalert2";
+
+type EmailData = {
+  email?: string;
+};
 
 const Index = () => {
   const [isPhone, setIsPhone] = useState<boolean>(false);
+
+  const [EmailData, setEmailData] = useState<EmailData>({
+    email: "",
+  });
+
+  const handleChangeForgetPasswordForm = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const { name, value } = e.target;
+
+    setEmailData((prev) => {
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
+  };
+
+  const handleSubmitForgetPassword = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
+    try {
+      e.preventDefault();
+
+      Swal.fire({
+        title: "กำลังส่งการยืนยันไปที่ email",
+        html: "กรุณารอสักครู่",
+        timerProgressBar: true,
+        allowEscapeKey: false,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const forgetPassword = await ForgetPasswordService({
+        email: EmailData.email as string,
+      });
+
+      //route.push("/");
+      Swal.fire({
+        title: "เข้าสู่ระบบสำเร็จ",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error: any) {
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: error.message,
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  };
+
   return (
     <div className="flex min-h-screen w-screen font-Anuphan">
       {/* Left */}
@@ -33,7 +95,10 @@ const Index = () => {
             <User />
           </div>
 
-          <Form className="flex w-[85%] flex-col gap-5 md:mt-1 lg:gap-2">
+          <Form
+            className="flex w-[85%] flex-col gap-5 md:mt-1 lg:gap-2"
+            onSubmit={handleSubmitForgetPassword}
+          >
             {isPhone ? (
               <div>
                 <section className="-mt-1 flex flex-col items-center">
@@ -58,7 +123,10 @@ const Index = () => {
                     <Label className="text-xl font-semibold text-[#597E52] md:text-sm">
                       เบอร์โทรศัพท์ :
                     </Label>
-                    <Input className="w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 py-2 pl-3 text-sm md:py-1" />
+                    <Input
+                      onChange={handleChangeForgetPasswordForm}
+                      className="w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 py-2 pl-3 text-sm md:py-1"
+                    />
                   </div>
                   <div className="flex w-full justify-center">
                     <FieldError className="mt-2 w-[90%] text-center text-sm text-red-600" />
