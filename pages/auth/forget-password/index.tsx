@@ -10,9 +10,65 @@ import {
   Label,
   TextField,
 } from "react-aria-components";
+import Swal from "sweetalert2";
+import { ForgetPasswordService } from "../../../services/auth";
 
 const Index = () => {
-  const [isPhone, setIsPhone] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>("");
+  const [wait, setWait] = useState(false);
+  const [secound, setSecound] = useState(0);
+
+  const handleSummitForgetPassword = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      Swal.fire({
+        title: "กรุณารอสักครู่",
+        html: "กำลังดำเนินการ...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+      const sendEmail = await ForgetPasswordService({ email });
+      setWait(() => true);
+      hanldeTimmingWait();
+      Swal.fire({
+        icon: "success",
+        title: "สำเร็จ",
+        text: "กรุณาตรวจสอบอีเมลล์ของท่าน",
+      });
+    } catch (error: any) {
+      console.log(error);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: error.message,
+      });
+    }
+  };
+
+  const hanldeTimmingWait = () => {
+    setSecound(20); // Set the initial value of the countdown timer
+    setWait(() => true);
+    const timer = setInterval(() => {
+      setSecound((prevCount) => prevCount - 1);
+    }, 1000);
+
+    setTimeout(() => {
+      clearInterval(timer);
+      if (secound === 0) {
+        setWait(() => false);
+      }
+      setWait(false);
+      // Perform your action here after the wait duration
+      // For example, you can set the `wait` state to false to indicate that the wait is over
+    }, 20000); // Wait for 10 seconds (1000 milliseconds * 10)
+
+    // Cleanup function
+    return () => {
+      clearInterval(timer);
+    };
+  };
   return (
     <div className="flex min-h-screen w-screen font-Anuphan">
       {/* Left */}
@@ -33,90 +89,53 @@ const Index = () => {
             <User />
           </div>
 
-          <Form className="flex w-[85%] flex-col gap-5 md:mt-1 lg:gap-2">
-            {isPhone ? (
-              <div>
-                <section className="-mt-1 flex flex-col items-center">
-                  <p className="my-2 flex w-[18rem] flex-col items-start text-start text-sm  font-semibold text-[#3193A9] underline lg:text-[0.8rem] ">
-                    <button
-                      onClick={() => {
-                        setIsPhone(!isPhone);
-                      }}
-                    >
-                      เปลี่ยนไปใช้ email
-                    </button>
-                    {/* ควร toggle ให้กลับไปใส่ email เหมือนเดิมดีไหม?? */}
-                  </p>
-                </section>
-                <TextField
-                  name="phone"
-                  type="tel"
-                  isRequired
-                  className="flex flex-col items-center  "
-                >
-                  <div className="flex flex-col items-start justify-start gap-2">
-                    <Label className="text-xl font-semibold text-[#597E52] md:text-sm">
-                      เบอร์โทรศัพท์ :
-                    </Label>
-                    <Input className="w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 py-2 pl-3 text-sm md:py-1" />
-                  </div>
-                  <div className="flex w-full justify-center">
-                    <FieldError className="mt-2 w-[90%] text-center text-sm text-red-600" />
-                  </div>
-                </TextField>
-              </div>
-            ) : (
-              <div>
-                <TextField
-                  name="email"
-                  type="email"
-                  isRequired
-                  className="flex flex-col items-center  "
-                >
-                  <div className="flex flex-col items-start justify-start gap-2">
-                    <Label className="text-xl font-semibold text-[#597E52] md:text-sm">
-                      E-mail :
-                    </Label>
-                    <Input className="w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 py-2 pl-3 text-sm md:py-1" />
-                  </div>
-                  <div className="flex w-full justify-center">
-                    <FieldError className="mt-2 w-[90%] text-center text-sm text-red-600" />
-                  </div>
-                </TextField>
-                <section className="mt-1 flex flex-col items-center">
-                  <p className="my-2 flex w-[18rem] flex-col items-start text-start text-sm  font-semibold text-[#3193A9] underline lg:text-[0.8rem] ">
-                    <button
-                      onClick={() => {
-                        setIsPhone(!isPhone);
-                      }}
-                    >
-                      ลืม E-mail ใช่ไหม? กรอกเบอร์โทรศัทพ์เพื่อค้นหา?
-                    </button>
-                  </p>
-                </section>
-              </div>
-            )}
-            {/* email password */}
-
-            {/* submit ไปแล้ว ขึ้นalertด้วย */}
-            <div className="flex justify-center">
-              <Button
-                type="submit"
-                className="mt-5 w-[13rem] rounded-full bg-[#597E52] p-3 text-center 
-           text-xl font-semibold text-white drop-shadow-lg duration-300 hover:bg-[#81b077] md:text-base"
+          <Form
+            onSubmit={handleSummitForgetPassword}
+            className="flex w-[85%] flex-col gap-5 md:mt-1 lg:gap-2"
+          >
+            <div>
+              <TextField
+                name="email"
+                type="email"
+                isRequired
+                value={email}
+                onChange={(e) => setEmail(e)}
+                className="flex flex-col items-center  "
               >
-                ค้นหา
-              </Button>
+                <div className="flex flex-col items-start justify-start gap-2">
+                  <Label className="text-xl font-semibold text-[#597E52] md:text-sm">
+                    E-mail :
+                  </Label>
+                  <Input
+                    type="email"
+                    className="h-10 w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 py-2 pl-3 text-sm md:py-1"
+                  />
+                </div>
+                <div className="flex w-full justify-center">
+                  <FieldError className="mt-2 w-[90%] text-center text-sm text-red-600" />
+                </div>
+              </TextField>
+            </div>
+
+            <div className="flex justify-center">
+              {wait ? (
+                <div
+                  className="mt-5 w-60 rounded-full bg-gray-400 p-3 text-center 
+           text-xl font-semibold text-white  md:text-base"
+                >
+                  โปรดตรวจสอบอีเมลของคุณ {secound}
+                </div>
+              ) : (
+                <Button
+                  type="submit"
+                  className="mt-5 w-[13rem] rounded-full bg-[#597E52] p-3 text-center 
+           text-xl font-semibold text-white drop-shadow-lg duration-300 hover:bg-[#81b077] md:text-base"
+                >
+                  ส่งอีเมลล์
+                </Button>
+              )}
             </div>
           </Form>
-          {/* <div className="col-3 col-s-3 menu flex flex-col">
-                <h2>PRSME</h2>
-              <ul className='bg-slate-200'>
-                <li><a href="">My Showcase</a></li>
-                <li><a href="">My Resume</a></li>
-                <li><a href="">TU Life</a></li> 
-              </ul>
-        </div> */}
         </div>
       </div>
     </div>

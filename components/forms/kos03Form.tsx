@@ -42,6 +42,7 @@ function Kos03Form({ kos03 }: Kos03FormProps) {
                   blurDataURL={backgroundImageBase64}
                   alt="image of activity"
                   fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover"
                 />
                 <div
@@ -89,6 +90,9 @@ function Kos03Form({ kos03 }: Kos03FormProps) {
                       src={file.url}
                       alt="image of activity"
                       fill
+                      placeholder="blur"
+                      blurDataURL={backgroundImageBase64}
+                      sizes="(max-width: 768px) 100vw, 33vw"
                       className="object-cover transition duration-100 hover:scale-110"
                     />
                   </a>
