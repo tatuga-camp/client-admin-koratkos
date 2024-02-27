@@ -1,5 +1,3 @@
-import Sidebar from "@/components/sidebars/homepageSidebar";
-import User from "@/components/svgs/User";
 import Link from "next/link";
 import React, { useState } from "react";
 import {
@@ -17,6 +15,8 @@ import {
 } from "../../../services/auth";
 import { useRouter } from "next/router";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import HomepageSidebar from "../../../components/sidebars/homepageSidebar";
+import User from "../../../components/svgs/User";
 
 const Index = () => {
   const [resetPasswordData, setResetPasswordData] = useState<{
@@ -74,7 +74,7 @@ const Index = () => {
   return (
     <div className="flex min-h-screen w-screen font-Anuphan">
       {/* Left */}
-      <Sidebar />
+      <HomepageSidebar />
       {/* Right */}
       <div className="flex h-full w-full flex-col items-center lg:mt-6 lg:justify-center">
         <div className="my-8 flex w-full flex-col items-center justify-center  ">
@@ -106,6 +106,7 @@ const Index = () => {
                 </Label>
                 <Input
                   name="password"
+                  min={8}
                   value={resetPasswordData?.password}
                   onChange={handleChangeResetPasswordData}
                   type={triggerShowPassword ? "text" : "password"}
@@ -138,6 +139,7 @@ const Index = () => {
                   กรอกรหัสผ่านอีกครั้ง :
                 </Label>
                 <Input
+                  min={8}
                   name="confirmPassword"
                   type={triggerShowPassword ? "text" : "password"}
                   value={resetPasswordData?.confirmPassword}
