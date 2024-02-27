@@ -79,7 +79,7 @@ export async function ForgetPasswordService(
     const forget = await axios({
       method: "POST",
       url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/auth/forgot-password`,
-      params: { ...input },
+      data: { ...input },
       headers: {
         "Content-Type": "application/json",
       },
