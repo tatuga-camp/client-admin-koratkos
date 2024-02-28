@@ -10,7 +10,15 @@ export type User = {
   phone: string;
   passwordResetToken?: string;
   passwordResetTokenExpiresAt?: string;
-  role: "evaluator" | "committee" | "organizer";
-  organization: string;
+  role: Role;
+  organization: Organization;
   userCreateKeyId: string;
 };
+
+export type Role = "evaluator" | "admin";
+
+export type Organization =
+  | "university"
+  | "argiculturalProvince"
+  | "argiculturalAmphure"
+  | "argiculturalTambon";

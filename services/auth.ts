@@ -1,14 +1,16 @@
 import axios from "axios";
-import { User } from "../model";
+import { Organization, User } from "../model";
 
 type RequestSignUpService = {
   email: string;
   firstName: string;
   lastName: string;
-  organization: string;
+  organization: Organization;
   phone: string;
   password: string;
   createUserKey: string;
+  amphure?: string;
+  tambon?: string;
 };
 
 type ResponseSignUpService = {
@@ -20,6 +22,17 @@ export async function SignUpService(
   input: RequestSignUpService,
 ): Promise<ResponseSignUpService> {
   try {
+    if (
+      input.organization === "university" ||
+      input.organization === "argiculturalProvince"
+    ) {
+      delete input.amphure;
+      delete input.tambon;
+    }
+    if (input.organization === "argiculturalAmphure") {
+      delete input.tambon;
+    }
+
     const signUp = await axios({
       method: "POST",
       url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/auth/sign-up`,
