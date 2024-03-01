@@ -37,10 +37,10 @@ function TableFarmer({
   registerFormsQuery,
 }: TableFarmerProps) {
   return (
-    <div className="w-full rounded-lg bg-fourth-color p-5">
+    <div className="w-full rounded-lg bg-fourth-color p-2 text-center text-[0.6rem] md:text-sm lg:p-5 lg:text-base">
       <table className="w-full  ">
         <thead>
-          <tr className=" mb-5 grid w-full grid-cols-5 place-items-center items-center justify-start gap-5">
+          <tr className=" mb-5 grid w-full grid-cols-5 place-items-center items-center justify-start gap-1 lg:gap-5 ">
             <td className="w-full rounded-lg bg-super-main-color py-1 text-center font-semibold text-white">
               รายชื่อ
             </td>
@@ -107,10 +107,10 @@ function TableFarmer({
                 return (
                   <tr
                     key={registerForm.farmer.id}
-                    className=" grid w-full grid-cols-5  items-start justify-center gap-5 "
+                    className=" grid w-full grid-cols-5  items-start justify-center gap-2 lg:gap-5 "
                   >
                     <td className="flex h-11  max-w-full items-center justify-start gap-2 overflow-x-auto  font-semibold">
-                      <div className="flex w-max items-center justify-center gap-2 px-4">
+                      <div className="flex w-max items-center justify-center gap-2  px-4">
                         <div className="relative h-8 w-8 overflow-hidden rounded-full ">
                           <Image
                             src={registerForm.farmer.picture}
@@ -130,7 +130,7 @@ function TableFarmer({
                       {registerForm.farmer.phoneNumber}
                     </td>
                     <td
-                      className={`flex h-10 w-full items-center  justify-center gap-2 rounded-lg
+                      className={`flex h-10 w-full items-center  justify-center gap-2 rounded-lg p-2
                      ${
                        registerForm?.registerForm?.status === "pending"
                          ? "bg-secondary-color"
@@ -143,16 +143,17 @@ function TableFarmer({
                     >
                       {registerForm.registerForm ? status : "ยังไม่ยื่นคำขอ"}
                     </td>
-                    <td className="flex h-10 w-full items-center justify-center gap-2 text-xs font-semibold  lg:text-sm xl:text-base">
+
+                    <td className="flex h-10 w-full items-center justify-center gap-2 text-[0.5rem] font-semibold md:text-sm lg:text-sm xl:text-base">
                       {registerForm.registerForm ? summitDate : "-"}
                     </td>
 
                     <td
-                      className="flex h-10 w-full cursor-pointer items-center justify-center  gap-2 rounded-lg bg-super-main-color font-semibold text-white
-                     drop-shadow-lg transition duration-100 hover:scale-105 active:scale-110"
+                      className="flex h-10 w-full cursor-pointer items-center justify-center  gap-2 rounded-lg bg-super-main-color font-semibold
+                     text-white drop-shadow-lg transition duration-100 hover:scale-105 active:scale-110"
                     >
                       <Link
-                        className="flex w-full items-center justify-center gap-2"
+                        className="flex w-full items-center justify-center gap-2 "
                         href={`/farmer/${registerForm.farmer.id}`}
                       >
                         <MdAddChart />

@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { GetListFarmersService } from "../services/farmer";
 import Link from "next/link";
 import { backgroundImageBase64 } from "../data/base64Images";
+import Navbar from "@/components/navbars/Navbar";
 
 type LayoutProps = {
   children: ReactNode;
@@ -48,16 +49,21 @@ function DashboardLayout({ children, user }: LayoutProps) {
   return (
     <section className="flex bg-third-color font-Anuphan">
       <DashboardSidebar />
-      <div className="flex w-full flex-col items-center py-10">
-        <section className="flex w-full items-center justify-between gap-2 px-5 lg:w-11/12">
-          <div className="flex flex-col gap-1 font-semibold">
+      <div className="flex w-full flex-col items-center pb-10 lg:pt-10">
+        <section className="lg:hidden">
+          <Navbar />
+        </section>
+
+        <section className="flex w-full flex-col items-center justify-between gap-3 px-10 lg:w-11/12 lg:flex-row lg:px-5">
+          <div className=" flex flex-col gap-1  font-semibold">
             <span className="text-2xl font-semibold">สวัสดี! </span>
             <span className="text-4xl">
               {user.firstName} {user.lastName}
             </span>
             <span className="text-sm text-secondary-color">{user.email}</span>
           </div>
-          <SearchField className="relative flex w-80 flex-col">
+
+          <SearchField className="relative z-20 flex w-full flex-col gap-2 lg:w-80 ">
             <Label>ค้นหาเกษตรกร</Label>
             <Input
               placeholder="ค้นหาด้วยชื่อจริง"
@@ -120,8 +126,8 @@ function DashboardLayout({ children, user }: LayoutProps) {
             )}
           </SearchField>
 
-          <div className="relative flex items-center justify-center">
-            <div className="relative h-24 w-24 overflow-hidden rounded-full bg-transparent ring-2 ring-super-main-color">
+          <div className="relative flex items-center justify-center ">
+            <div className="relative my-4 h-32 w-32 overflow-hidden rounded-full bg-transparent ring-2 ring-super-main-color lg:h-24 lg:w-24">
               <Image
                 alt="picture profile"
                 src={user.picture}

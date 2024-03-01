@@ -57,7 +57,7 @@ function Index({ userServer }: { userServer: User }) {
         <title>Admin Dashboard</title>
       </Head>
       <div className="mt-10 flex w-11/12 flex-col items-center justify-start gap-5 ">
-        <header className=" grid w-full grid-cols-4 gap-2 px-5">
+        <header className=" grid w-full grid-cols-2 gap-2 px-0 lg:grid-cols-4 lg:px-5">
           {statisticMenuCards().map((list, index) => (
             <StatisticsCard
               key={index}
@@ -66,7 +66,8 @@ function Index({ userServer }: { userServer: User }) {
             />
           ))}
         </header>
-        <main className="mt-10 flex w-full flex-col items-center justify-start gap-2">
+
+        <main className="mt-0 flex w-full flex-col items-center justify-start gap-2 lg:mt-10">
           {plantType.isLoading || !plantType.data ? (
             <div className="h-96 w-full animate-pulse bg-gray-200"></div>
           ) : (
@@ -75,7 +76,7 @@ function Index({ userServer }: { userServer: User }) {
           <h1 className="mt-5 w-full text-left text-2xl font-extrabold text-[#5C430D]">
             รายชื่อผู้ส่งคำขอรับการประเมิน
           </h1>
-          <div className="flex w-full items-center justify-between gap-3">
+          <div className="flex w-full flex-col items-center justify-between gap-3 lg:flex-row">
             <SearchField
               value={registerFormsQuery.firstName}
               onChange={(e) => {
@@ -86,15 +87,15 @@ function Index({ userServer }: { userServer: User }) {
                   };
                 });
               }}
-              className="relative flex w-96 flex-col"
+              className="relative my-2 flex w-11/12 flex-col "
             >
               <Input
                 placeholder="ค้นหาด้วยชื่อจริง"
-                className=" h-10 rounded-lg bg-fourth-color  p-5 pl-10 outline-0 lg:w-full"
+                className=" h-10  rounded-lg bg-fourth-color  p-5 pl-10 outline-0 lg:w-full"
               />
               <IoSearchCircleSharp className="absolute bottom-0 left-2 top-0 m-auto text-3xl text-super-main-color" />
             </SearchField>
-            <ul className="grid h-10 w-full grid-cols-4 gap-2">
+            <ul className="grid h-10 w-full grid-cols-4 gap-2  text-center">
               {filterRegisterForms.map((list, index) => {
                 return (
                   <li

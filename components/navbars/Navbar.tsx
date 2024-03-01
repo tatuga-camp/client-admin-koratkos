@@ -7,7 +7,7 @@ import KOSLogo from "../svgs/KOSLogo";
 const Navbar = () => {
   return (
     <div className="h-full w-screen">
-      <div className="flex h-[8rem] w-full items-center justify-between bg-[#F1E4C3] p-6 font-Anuphan lg:hidden">
+      <div className="flex h-[8rem] w-full items-center justify-between bg-[#F1E4C3] p-9 font-Anuphan lg:hidden">
         <div>
           <Link
             href={process.env.NEXT_PUBLIC_MAIN_CLIENT_URL as string}
