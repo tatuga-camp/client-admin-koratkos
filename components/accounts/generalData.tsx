@@ -17,6 +17,7 @@ import {
   UploadProfileUserService,
 } from "../../services/user";
 import Swal from "sweetalert2";
+import { organizationLists } from "../../data/organization";
 
 type GernerralDataProps = {
   user: DefinedUseQueryResult<User, Error>;
@@ -188,17 +189,58 @@ function GeneralData({ user }: GernerralDataProps) {
               placeholder="999-999-9999"
             />
           </TextField>
-          <TextField className="flex w-full flex-col items-start justify-center gap-2">
-            <Label className="text-xl font-semibold text-super-main-color">
-              องค์กร/หน่วยงาน :{" "}
-            </Label>
-            <Input
-              name="organization"
-              onChange={handleChangeUserData}
-              value={userData.organization}
-              className="w-60 rounded-lg bg-white p-2 ring-1 ring-super-main-color"
-            />
-          </TextField>
+          <div className="flex gap-5">
+            <TextField
+              isDisabled
+              className="flex w-full flex-col items-start justify-center gap-2 "
+            >
+              <Label className="text-xl font-semibold text-super-main-color">
+                องค์กร/หน่วยงาน :{" "}
+              </Label>
+              <Input
+                disabled
+                onChange={handleChangeUserData}
+                value={
+                  organizationLists.find(
+                    (org) => org.value === userData.organization,
+                  )?.title
+                }
+                className="w-60 select-none rounded-lg bg-white p-2 ring-1 ring-gray-400"
+              />
+            </TextField>
+            {user.data.organization === "argiculturalAmphure" && (
+              <TextField
+                isDisabled
+                className="flex w-full flex-col items-start justify-center gap-2 "
+              >
+                <Label className="text-xl font-semibold text-super-main-color">
+                  อำเภอ
+                </Label>
+                <Input
+                  disabled
+                  onChange={handleChangeUserData}
+                  value={user.data.amphure}
+                  className="w-60 select-none rounded-lg bg-white p-2 ring-1 ring-gray-400"
+                />
+              </TextField>
+            )}
+            {user.data.organization === "argiculturalTambon" && (
+              <TextField
+                isDisabled
+                className="flex w-full flex-col items-start justify-center gap-2 "
+              >
+                <Label className="text-xl font-semibold text-super-main-color">
+                  ตำบล
+                </Label>
+                <Input
+                  disabled
+                  onChange={handleChangeUserData}
+                  value={user.data.tambon}
+                  className="w-60 select-none rounded-lg bg-white p-2 ring-1 ring-gray-400"
+                />
+              </TextField>
+            )}
+          </div>
         </div>
       </div>
       <Button

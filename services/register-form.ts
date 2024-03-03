@@ -20,6 +20,7 @@ export type RequestGetAllReadyRegisterFormByPage = {
 export type ResponseGetAllRegisterFormaEvaluation = Pagination<{
   farmer: Farmer;
   registerForm: RegisterFormEvaluation;
+  formEvaluations: FormEvaluation[];
 }>;
 export async function GetAllReadyRegisterFormByPage(
   input: RequestGetAllReadyRegisterFormByPage,

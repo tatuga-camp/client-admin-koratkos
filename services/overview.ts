@@ -87,6 +87,9 @@ export type GroupsType = {
     [key in "plant"]: number;
   };
   plant: string;
+  _sum: {
+    raiTotal: number;
+  };
 };
 export async function GetAllPlantTypeByGroupService(): Promise<GroupsType[]> {
   try {

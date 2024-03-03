@@ -32,6 +32,7 @@ import {
 import { IoIosCheckbox, IoIosCheckboxOutline } from "react-icons/io";
 import Swal from "sweetalert2";
 import { GetUserService } from "../../services/user";
+import moment from "moment";
 
 type UpdateFormEvaluationProps = {
   selectFormEvaluation: FormEvaluation;
@@ -370,6 +371,12 @@ function UpdateFormEvaluation({
               <h3 className="flex items-center justify-start gap-2 text-super-main-color">
                 <FaSquarePhone />
                 {formEvaluation.data?.formEvaluation.user.phone}{" "}
+              </h3>
+              <h3 className="flex items-center justify-start gap-2 text-super-main-color">
+                ประเมินเมื่อวันที่{" "}
+                {moment(
+                  formEvaluation.data.formEvaluation.evaluatedDate,
+                ).format("DD/MMMM/YYYY")}{" "}
               </h3>
             </div>
           )}

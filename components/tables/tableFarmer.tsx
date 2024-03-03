@@ -40,7 +40,7 @@ function TableFarmer({
     <div className="w-full rounded-lg bg-fourth-color p-5">
       <table className="w-full  ">
         <thead>
-          <tr className=" mb-5 grid w-full grid-cols-5 place-items-center items-center justify-start gap-5">
+          <tr className=" mb-5 grid w-full grid-cols-6 place-items-center items-center justify-start gap-5">
             <td className="w-full rounded-lg bg-super-main-color py-1 text-center font-semibold text-white">
               รายชื่อ
             </td>
@@ -49,6 +49,9 @@ function TableFarmer({
             </td>
             <td className="w-full rounded-lg bg-super-main-color py-1 text-center font-semibold text-white">
               สถานะ
+            </td>
+            <td className="w-full rounded-lg bg-super-main-color py-1 text-center font-semibold text-white">
+              รอบครั้งการประเมิน
             </td>
             <td
               onClick={() =>
@@ -107,7 +110,7 @@ function TableFarmer({
                 return (
                   <tr
                     key={registerForm.farmer.id}
-                    className=" grid w-full grid-cols-5  items-start justify-center gap-5 "
+                    className=" grid w-full grid-cols-6  items-start justify-center gap-5 "
                   >
                     <td className="flex h-11  max-w-full items-center justify-start gap-2 overflow-x-auto  font-semibold">
                       <div className="flex w-max items-center justify-center gap-2 px-4">
@@ -142,6 +145,9 @@ function TableFarmer({
                      } font-semibold  text-white`}
                     >
                       {registerForm.registerForm ? status : "ยังไม่ยื่นคำขอ"}
+                    </td>
+                    <td className="flex h-10 w-full items-center justify-center gap-2 text-xs font-semibold  lg:text-sm xl:text-base">
+                      ประเมินไปแล้ว {registerForm.formEvaluations?.length} ครั้ง
                     </td>
                     <td className="flex h-10 w-full items-center justify-center gap-2 text-xs font-semibold  lg:text-sm xl:text-base">
                       {registerForm.registerForm ? summitDate : "-"}

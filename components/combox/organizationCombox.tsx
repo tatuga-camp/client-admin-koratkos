@@ -5,13 +5,7 @@ import { Input, Label, TextField } from "react-aria-components";
 import { FaCheck } from "react-icons/fa";
 import { RiExpandUpDownLine } from "react-icons/ri";
 import { SignUpData } from "../../pages/auth/sign-up";
-
-const organizationLists = [
-  { title: "มหาวิทยาลัยราชภัฏนครราชสีมา", value: "university" },
-  { title: "เกษตรจังหวัดนครราชสีมา", value: "argiculturalProvince" },
-  { title: "เกษตรอำเภอ", value: "argiculturalAmphure" },
-  { title: "เกษตรตำบล", value: "argiculturalTambon" },
-];
+import { organizationLists } from "../../data/organization";
 
 type OrganizationComboxProps = {
   signUpData: SignUpData | undefined;

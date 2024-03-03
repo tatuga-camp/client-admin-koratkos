@@ -45,21 +45,27 @@ function TambonComBox({ signUpData, setSignUpData }: TambonComBoxProps) {
         <Label className="text-xl font-semibold text-[#597E52] md:text-base">
           ตำบล :
         </Label>
-        <div
-          className="relative w-full cursor-default overflow-hidden 
+        {tambons.isLoading ? (
+          <div className="relative flex h-10 w-96 animate-pulse items-center justify-start rounded-lg bg-gray-400 px-3">
+            กำลังโหลด..
+          </div>
+        ) : (
+          <div
+            className="relative w-full cursor-default overflow-hidden 
        text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75
         focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
-        >
-          <Combobox.Input
-            required
-            className="h-10 w-[20rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 md:w-[25rem] md:py-1"
-            displayValue={(tambon: Tambon) => tambon.name_th}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-          <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-            <RiExpandUpDownLine />
-          </Combobox.Button>
-        </div>
+          >
+            <Combobox.Input
+              required
+              className="h-10 w-[20rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 md:w-[25rem] md:py-1"
+              displayValue={(tambon: Tambon) => tambon.name_th}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+              <RiExpandUpDownLine />
+            </Combobox.Button>
+          </div>
+        )}
         <Transition
           as={Fragment}
           leave="transition ease-in duration-100"

@@ -1,6 +1,6 @@
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { parseCookies } from "nookies";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { GetUserService } from "../../../services/user";
 import { User } from "../../../model";
 import { MenuFarmerEvaluation } from "../../../data/menus";
@@ -33,10 +33,11 @@ import Image from "next/image";
 import Head from "next/head";
 import DashboardLayout from "../../../layouts/dashboardLayout";
 import Swal from "sweetalert2";
-import { DowloadPDFService } from "../../../services/dowloadFile";
+import Link from "next/link";
 
 function Index({ userServer }: { userServer: User }) {
   const [selectMenu, setSelectMenu] = useState<number>(0);
+
   const [triggerShowIdCard, setTriggerShowIdCard] = useState<boolean>(false);
   const router = useRouter();
   const kos01 = useQuery({
@@ -73,35 +74,6 @@ function Index({ userServer }: { userServer: User }) {
       GetFarmerService({ farmerId: router.query.farmerId as string }),
   });
 
-  const handleDownloadPDF = async () => {
-    try {
-      Swal.fire({
-        icon: "info",
-        title: "กำลังดาวโหลดเอกสาร",
-        text: "กรุณารอสักครู่",
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-      const download = await DowloadPDFService({
-        farmerId: router.query.farmerId as string,
-      });
-
-      Swal.fire({
-        icon: "success",
-        title: "ดาวโหลดเอกสารสำเร็จ",
-        text: "เอกสารได้ถูกดาวโหลดเรียบร้อยแล้ว",
-      });
-    } catch (error: any) {
-      Swal.fire({
-        icon: "error",
-        title: "เกิดข้อผิดพลาด",
-        text: error.message,
-      });
-    }
-  };
   return (
     <DashboardLayout user={userServer}>
       <Head>
@@ -162,12 +134,14 @@ function Index({ userServer }: { userServer: User }) {
                   />
                 )}
               </h4>
-              <button
-                onClick={handleDownloadPDF}
+
+              <Link
+                target="_blank"
+                href={`${router.query.farmerId}/report`}
                 className="button-focus flex items-center justify-center gap-2 rounded-lg bg-fifth-color px-5 py-1 text-white"
               >
                 ดาวโหลดเอกสาร <FaFileDownload />
-              </button>
+              </Link>
             </div>
             <div className="flex w-max flex-col items-end justify-center">
               <div className="relative h-20 w-20 overflow-hidden rounded-full">

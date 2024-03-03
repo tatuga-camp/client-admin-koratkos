@@ -54,26 +54,33 @@ function Index({ userServer }: { userServer: User }) {
   return (
     <DashboardLayout user={user.data}>
       <Head>
-        <title>Admin Dashboard</title>
+        <title>Evaluation Dashboard</title>
       </Head>
       <div className="mt-10 flex w-11/12 flex-col items-center justify-start gap-5 ">
-        <header className=" grid w-full grid-cols-4 gap-2 px-5">
-          {statisticMenuCards().map((list, index) => (
-            <StatisticsCard
-              key={index}
-              title={list.title}
-              number={list.number}
-            />
-          ))}
-        </header>
+        {(user.data.organization === "university" ||
+          user.data.organization === "argiculturalProvince") && (
+          <header className=" grid w-full grid-cols-4 gap-2 px-5">
+            {statisticMenuCards().map((list, index) => (
+              <StatisticsCard
+                key={index}
+                title={list.title}
+                number={list.number}
+              />
+            ))}
+          </header>
+        )}
         <main className="mt-10 flex w-full flex-col items-center justify-start gap-2">
           {plantType.isLoading || !plantType.data ? (
             <div className="h-96 w-full animate-pulse bg-gray-200"></div>
           ) : (
-            <ChartComponent groups={plantType.data} />
+            <ChartComponent groups={plantType} />
           )}
           <h1 className="mt-5 w-full text-left text-2xl font-extrabold text-[#5C430D]">
-            รายชื่อผู้ส่งคำขอรับการประเมิน
+            รายชื่อผู้ส่งคำขอรับการประเมิน{" "}
+            {user.data.organization === "argiculturalAmphure"
+              ? `เฉพาะเขตอำเภอ${user.data.amphure}`
+              : user.data.organization === "argiculturalTambon" &&
+                `เฉพาะเขตตำบล${user.data.tambon}`}
           </h1>
           <div className="flex w-full items-center justify-between gap-3">
             <SearchField
