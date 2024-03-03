@@ -22,7 +22,10 @@ function Kos02Form({ kos02 }: Kos02FormProps) {
             <div className="relative grid h-max w-full grid-cols-2 ">
               {kos02.data?.files.map((file, index) => {
                 return (
-                  <div className="relative h-40 w-40 overflow-hidden  ">
+                  <div
+                    key={index}
+                    className="relative h-40 w-40 overflow-hidden  "
+                  >
                     <Image
                       onClick={() => window.open(file.url as string, "_blank")}
                       fill
