@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { GetListFarmersService } from "../services/farmer";
 import Link from "next/link";
 import { backgroundImageBase64 } from "../data/base64Images";
+import { organizationLists } from "../data/organization";
 
 type LayoutProps = {
   children: ReactNode;
@@ -47,17 +48,31 @@ function DashboardLayout({ children, user }: LayoutProps) {
   }, [query.firstName]);
   return (
     <section className="flex bg-third-color font-Anuphan">
-      <DashboardSidebar />
+      <DashboardSidebar user={user} />
       <div className="flex w-full flex-col items-center py-10">
-        <section className="flex w-full items-center justify-between gap-2 px-5 lg:w-11/12">
-          <div className="flex flex-col gap-1 font-semibold">
+        <section className="flex w-full items-end justify-between gap-2 px-5 lg:w-11/12">
+          <div className="flex max-w-[24rem] flex-col gap-1 truncate font-semibold xl:max-w-[30rem]">
             <span className="text-2xl font-semibold">สวัสดี! </span>
-            <span className="text-4xl">
+            <div className="truncate text-3xl">
               {user.firstName} {user.lastName}
-            </span>
-            <span className="text-sm text-secondary-color">{user.email}</span>
+            </div>
+
+            <div className="flex items-center justify-start gap-2">
+              <span className="rounded-md bg-secondary-color px-2 py-1 text-sm text-white">
+                {user.email}
+              </span>
+              <span className="rounded-md bg-fifth-color  px-2 py-1 text-sm text-white">
+                {
+                  organizationLists.find(
+                    (list) => list.value === user.organization,
+                  )?.title
+                }
+                {user.organization === "argiculturalAmphure" && user.amphure}
+                {user.organization === "argiculturalTambon" && user.tambon}
+              </span>
+            </div>
           </div>
-          <SearchField className="relative flex w-80 flex-col">
+          <SearchField className="relative flex w-52 flex-col xl:w-80">
             <Label>ค้นหาเกษตรกร</Label>
             <Input
               placeholder="ค้นหาด้วยชื่อจริง"
@@ -130,10 +145,12 @@ function DashboardLayout({ children, user }: LayoutProps) {
               />
             </div>
             <div
-              className="absolute -bottom-3 left-0 right-0 m-auto
+              className="absolute -bottom-3 left-0 right-0 m-auto w-max
              rounded-full bg-secondary-color px-4 py-1 text-center text-sm font-semibold text-white"
             >
-              ผู้ประเมิน
+              {user.role === "evaluator"
+                ? "ผู้ประเมิน"
+                : user.role === "admin" && "ผู้ดูแลระบบ"}
             </div>
           </div>
         </section>

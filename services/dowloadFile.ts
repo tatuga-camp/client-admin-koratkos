@@ -1,43 +1,27 @@
 import axios from "axios";
 import { parseCookies } from "nookies";
 
-type RequestDowloadPDFService = {
+type RequestDowloadHTMLService = {
   farmerId: string;
+  access_token: string;
 };
-export async function DowloadPDFService(input: RequestDowloadPDFService) {
+export async function DowloadHTMLService(input: RequestDowloadHTMLService) {
   try {
-    const cookies = parseCookies();
-    const access_token = cookies.access_token;
     const urlPDF = await axios<string>({
       method: "GET",
-      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/file-generate/download-pdf`,
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/file-generate/download-html/report`,
       params: {
         ...input,
       },
+      responseType: "json",
       headers: {
-        Authorization: `Bearer ${access_token}`,
+        Authorization: `Bearer ${input.access_token}`,
       },
     });
 
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        downloadFile(urlPDF.data, "file.pdf");
-        resolve();
-      }, 5000);
-    });
+    return urlPDF.data;
   } catch (error: any) {
     console.error(error.response.data);
     throw error?.response?.data;
   }
-}
-
-// Function to trigger the file download
-function downloadFile(url: string, fileName: string): void {
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  window.URL.revokeObjectURL(url);
-  document.body.removeChild(a);
 }

@@ -5,8 +5,9 @@ import { RiShutDownLine } from "react-icons/ri";
 import { menusSidebar } from "../../data/menus";
 import { useQueryClient } from "@tanstack/react-query";
 import { destroyCookie } from "nookies";
+import { User } from "../../model";
 
-function DashboardSidebar() {
+function DashboardSidebar({ user }: { user: User }) {
   const queryClient = useQueryClient();
   const useSignOut = () => {
     destroyCookie(null, "access_token", { path: "/" });
@@ -42,7 +43,7 @@ function DashboardSidebar() {
           </p>
         </Link>
         <ul className="flex flex-col  items-center justify-center gap-4">
-          {menusSidebar().map((menu, index) => {
+          {menusSidebar({ user }).map((menu, index) => {
             return (
               <Link
                 className="flex  items-center justify-start gap-2 rounded-lg p-1 text-lg font-semibold text-super-main-color ring-third-color transition duration-100

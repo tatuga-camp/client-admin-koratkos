@@ -11,6 +11,7 @@ import {
   FarmDocKos1,
   Farmer,
   FileActivityKos3,
+  FileOnDocKos02,
   HarvestLogDocKos5,
   OrgCropProdCalForKos2,
   PlantKos1,
@@ -82,6 +83,7 @@ type RequestGetFarmerKos02Service = {
 };
 export type ResponseGetFarmerKos02Service = DocKos2 & {
   orgCropProdCalForKos2s: OrgCropProdCalForKos2[];
+  files: FileOnDocKos02[];
 };
 export async function GetFarmerKos02Service(
   input: RequestGetFarmerKos02Service,

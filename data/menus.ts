@@ -3,6 +3,8 @@ import { FaEdit } from "react-icons/fa";
 import { IoSettingsOutline } from "react-icons/io5";
 import { GoHomeFill } from "react-icons/go";
 import { HiDocumentCheck } from "react-icons/hi2";
+import { RiAdminFill } from "react-icons/ri";
+
 import {
   GetAllFailEvaluationCountService,
   GetAllFarmerCountService,
@@ -11,9 +13,10 @@ import {
 } from "../services/overview";
 import { FaLock } from "react-icons/fa";
 import { AiOutlineFundView } from "react-icons/ai";
+import { User } from "../model";
 
-export const menusSidebar = () => {
-  return [
+export const menusSidebar = ({ user }: { user: User }) => {
+  let menus = [
     {
       title: "หน้าหลัก",
       href: "/",
@@ -25,6 +28,15 @@ export const menusSidebar = () => {
       icon: IoSettingsOutline,
     },
   ];
+
+  if (user.role === "admin") {
+    menus.push({
+      title: "ผู้ดูแลระบบ",
+      href: "/admin",
+      icon: RiAdminFill,
+    });
+  }
+  return menus;
 };
 
 export const statisticMenuCards = (): {

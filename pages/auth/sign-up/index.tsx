@@ -18,6 +18,7 @@ import OrganizationCombox from "../../../components/combox/organizationCombox";
 import AmphureComBox from "../../../components/combox/amphureComBox";
 import TambonComBox from "../../../components/combox/tambonComBox";
 import { Organization } from "../../../model";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 
 export type SignUpData = {
   firstName?: string;
@@ -44,7 +45,7 @@ export type SignUpData = {
 
 const Index = () => {
   const route = useRouter();
-
+  const [triggerShowPassword, setTriggerShowPassword] = useState<boolean>(true);
   const [signUpData, setSignUpData] = useState<SignUpData>();
 
   const handleChangeSignUpData = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -243,12 +244,12 @@ const Index = () => {
 
           <TextField
             name="password"
-            type="password"
+            type={triggerShowPassword ? "text" : "password"}
             isRequired
             className="flex flex-col items-center "
             minLength={8}
           >
-            <div className="flex flex-col items-start justify-start gap-2">
+            <div className="relative flex flex-col items-start justify-start gap-2">
               <Label className="text-xl font-semibold text-[#597E52] md:text-base">
                 รหัสผ่าน :
               </Label>
@@ -256,6 +257,17 @@ const Index = () => {
                 onChange={handleChangeSignUpData}
                 className="w-[20rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 md:w-[25rem] md:py-1"
               />
+              {triggerShowPassword ? (
+                <FaRegEye
+                  className="absolute bottom-0 right-5 top-7 m-auto"
+                  onClick={() => setTriggerShowPassword((prev) => !prev)}
+                />
+              ) : (
+                <FaRegEyeSlash
+                  className="absolute bottom-0 right-5 top-7 m-auto"
+                  onClick={() => setTriggerShowPassword((prev) => !prev)}
+                />
+              )}
             </div>
             <div className="flex w-full justify-center">
               <FieldError className="mt-2 w-[90%] text-center text-sm text-red-600" />
@@ -264,12 +276,12 @@ const Index = () => {
 
           <TextField
             name="confirmPassword"
-            type="password"
+            type={triggerShowPassword ? "text" : "password"}
             isRequired
             className="flex flex-col items-center "
             minLength={8}
           >
-            <div className="flex flex-col items-start justify-start gap-2">
+            <div className="relative flex flex-col items-start justify-start gap-2">
               <Label className="text-xl font-semibold text-[#597E52] md:text-base">
                 ยืนยันรหัสผ่าน :
               </Label>
@@ -277,6 +289,17 @@ const Index = () => {
                 onChange={handleChangeSignUpData}
                 className="w-[20rem] rounded-lg border-[1px] border-solid border-slate-300 px-3 py-2 md:w-[25rem] md:py-1"
               />
+              {triggerShowPassword ? (
+                <FaRegEye
+                  className="absolute bottom-0 right-5 top-7 m-auto"
+                  onClick={() => setTriggerShowPassword((prev) => !prev)}
+                />
+              ) : (
+                <FaRegEyeSlash
+                  className="absolute bottom-0 right-5 top-7 m-auto"
+                  onClick={() => setTriggerShowPassword((prev) => !prev)}
+                />
+              )}
             </div>
             <div className="flex w-full justify-center">
               <FieldError className="mt-2 w-[90%] text-center text-sm text-red-600" />

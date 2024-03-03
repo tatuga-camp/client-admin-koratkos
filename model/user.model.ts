@@ -12,7 +12,10 @@ export type User = {
   passwordResetTokenExpiresAt?: string;
   role: Role;
   organization: Organization;
+  amphure?: string;
+  tambon?: string;
   userCreateKeyId: string;
+  isDeleted: boolean;
 };
 
 export type Role = "evaluator" | "admin";

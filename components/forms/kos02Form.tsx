@@ -18,28 +18,25 @@ function Kos02Form({ kos02 }: Kos02FormProps) {
           <h1 className="rounded-lg bg-fifth-color px-20 py-1 text-xl font-semibold text-white">
             แผนผังแปลง
           </h1>
-          <div className="relative h-96 w-full ">
-            <Image
-              src={kos02.data?.map as string}
-              fill
-              blurDataURL={backgroundImageBase64}
-              placeholder="blur"
-              className="object-contain"
-              alt="image map"
-            />
-          </div>
-
-          <a
-            href={kos02.data?.map as string}
-            download="map.jpg"
-            target="_blank"
-            className="flex w-max cursor-pointer items-center justify-center gap-2 rounded-lg bg-super-main-color
-           px-5 py-1 text-xl font-semibold text-white drop-shadow-md transition 
-           duration-100 hover:scale-105 active:scale-110"
-          >
-            <MdFileDownload />
-            ดาวน์โหลด
-          </a>
+          {kos02.data?.files && kos02.data.files.length > 0 && (
+            <div className="relative grid h-max w-full grid-cols-2 ">
+              {kos02.data?.files.map((file, index) => {
+                return (
+                  <div className="relative h-40 w-40 overflow-hidden  ">
+                    <Image
+                      onClick={() => window.open(file.url as string, "_blank")}
+                      fill
+                      src={file.url as string}
+                      blurDataURL={backgroundImageBase64}
+                      placeholder="blur"
+                      className="cursor-pointer object-cover transition duration-100 hover:scale-110"
+                      alt="image map"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
         {kos02.data?.orgCropProdCalForKos2s?.map((orgCropProd, index) => {
           const rangeDate = orgCropProd.rangeDate.map((time) => {
