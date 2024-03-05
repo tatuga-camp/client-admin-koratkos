@@ -58,9 +58,9 @@ function Certificate({
         <h3 className="max-w-3xl break-words text-center text-xl ">
           ที่อยู่{" "}
           <span>
-            บ้านเลขที่ {certificate.address} หมู่ที่ {certificate.villageNumber}{" "}
-            ตำบล{certificate.subdistrict} อำเภอเมือง{certificate.district}{" "}
-            จังหวัด{certificate.province}
+            {certificate.address} หมู่ที่ {certificate.villageNumber} ตำบล
+            {certificate.subdistrict} อำเภอ{certificate.district} จังหวัด
+            {certificate.province}
           </span>
         </h3>
         <div className="mt-5 text-center text-xl font-semibold">
@@ -86,7 +86,7 @@ function Certificate({
           <h3>จำนวน {certificate.totalPlant} ชนิดพืช</h3>
         </div>
         <h3 className="max-w-3xl break-words text-center text-xl font-semibold ">
-          {certificate.plantType.map((plant, index) => `${plant}, `)}
+          {certificate.plantType.map((plant, index) => `${plant}`).join(", ")}
         </h3>
         <div className="flex w-full items-center justify-center gap-3 text-xl ">
           <h3>
