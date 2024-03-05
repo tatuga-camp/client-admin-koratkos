@@ -52,8 +52,8 @@ function Certificate({
         <h1 className="text-2xl font-semibold">จังหวัดนครราชสีมา</h1>
         <h2 className="text-2xl">ใบรับรองฉบับนี้ให้ไว้เพื่อแสดงว่า</h2>
         <h2 className="text-2xl font-semibold">
-          {certificate.farmer.title} {certificate.farmer.firstName}{" "}
-          {certificate.farmer.lastName}
+          {certificate.farmer.title}
+          {certificate.farmer.firstName} {certificate.farmer.lastName}
         </h2>
         <h3 className="max-w-3xl break-words text-center text-xl ">
           ที่อยู่{" "}
