@@ -61,14 +61,15 @@ function Kos02Form({ kos02 }: Kos02FormProps) {
               </section>
               <section className="mt-2 flex w-full flex-col items-start">
                 <h1 className="text-4xl font-semibold text-super-main-color">
+                  <span className="text-sm">ชนิดพืช</span>{" "}
                   {orgCropProd.plantType}
                 </h1>
                 <span className="text-blue-600">
                   แหล่งที่มา: {orgCropProd.source}
                 </span>
               </section>
-              <section className="mt-5 flex w-full justify-center gap-2">
-                <div className="flex w-full items-center justify-center gap-2">
+              <section className="mt-5 flex w-full flex-col items-start justify-center gap-2">
+                <div className="flex w-full items-center justify-start gap-2">
                   <div className="rounded-full bg-super-main-color p-2 text-lg text-white">
                     <MdLandslide />
                   </div>
@@ -76,15 +77,14 @@ function Kos02Form({ kos02 }: Kos02FormProps) {
                     พื้นที่ {orgCropProd.landArea} ไร่
                   </span>
                 </div>
-                <div className="flex w-full items-center justify-center gap-2">
+                <div className="flex w-full items-center justify-start   gap-2">
                   <div className="rounded-full bg-super-main-color p-2 text-lg text-white">
                     <GiWeight />
                   </div>
                   <div className="text-xs font-semibold">
-                    <span className="text-sm">
-                      ผลผลิต {orgCropProd.yieldPerRai.toLocaleString()}{" "}
+                    <span className="text-base">
+                      ผลผลิต {orgCropProd.yieldPerRai.toLocaleString()} กก./ไร่
                     </span>
-                    <div className="text-xs">กก./ไร่</div>
                   </div>
                 </div>
               </section>
@@ -93,7 +93,7 @@ function Kos02Form({ kos02 }: Kos02FormProps) {
                   <FaSeedling />
                 </div>
                 <h1 className="text-2xl font-semibold text-[#502D16]">
-                  {orgCropProd.seed}
+                  <span className="text-sm">เมล็ด</span> {orgCropProd.seed}
                 </h1>
               </section>
               <section className="mt-5 flex w-full flex-col items-center justify-center gap-3">

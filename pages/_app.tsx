@@ -7,7 +7,6 @@ import { PrimeReactProvider, addLocale } from "primereact/api";
 import NextTopLoader from "nextjs-toploader";
 import "moment/locale/th";
 import type { AppProps } from "next/app";
-import "moment/locale/th";
 import { useRouter } from "next/router";
 
 export default function App({ Component, pageProps }: AppProps) {

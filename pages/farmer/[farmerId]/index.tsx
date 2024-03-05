@@ -20,6 +20,7 @@ import {
   GetFarmerKos05Service,
   GetFarmerService,
 } from "../../../services/farmer";
+import { PiCertificateFill } from "react-icons/pi";
 import { useRouter } from "next/router";
 import {
   FaAddressCard,
@@ -34,10 +35,17 @@ import Head from "next/head";
 import DashboardLayout from "../../../layouts/dashboardLayout";
 import Swal from "sweetalert2";
 import Link from "next/link";
+import TableCertificate from "../../../components/tables/tableCertificate";
+import {
+  DeleteCertificateService,
+  GetAllCertificateService,
+} from "../../../services/certificate";
+import CreateCertificate from "../../../components/forms/createCertificate";
 
 function Index({ userServer }: { userServer: User }) {
   const [selectMenu, setSelectMenu] = useState<number>(0);
-
+  const [triggerCreateCertificate, setTriggerCreateCertificate] =
+    useState<boolean>(false);
   const [triggerShowIdCard, setTriggerShowIdCard] = useState<boolean>(false);
   const router = useRouter();
   const kos01 = useQuery({
@@ -74,11 +82,23 @@ function Index({ userServer }: { userServer: User }) {
       GetFarmerService({ farmerId: router.query.farmerId as string }),
   });
 
+  const certificates = useQuery({
+    queryKey: ["certificates", router.query.farmerId],
+    queryFn: () =>
+      GetAllCertificateService({ farmerId: router.query.farmerId as string }),
+  });
+
   return (
     <DashboardLayout user={userServer}>
       <Head>
         <title>เกษตรกร</title>
       </Head>
+      {triggerCreateCertificate && (
+        <CreateCertificate
+          certificates={certificates}
+          setTriggerCreateCertificate={setTriggerCreateCertificate}
+        />
+      )}
       <div className="mt-10 flex w-full flex-col items-center justify-start gap-5">
         <header className="flex w-full flex-col items-center gap-5">
           <div className="flex h-max w-11/12 justify-between rounded-lg bg-fourth-color p-5">
@@ -134,14 +154,23 @@ function Index({ userServer }: { userServer: User }) {
                   />
                 )}
               </h4>
-
-              <Link
-                target="_blank"
-                href={`${router.query.farmerId}/report`}
-                className="button-focus flex items-center justify-center gap-2 rounded-lg bg-fifth-color px-5 py-1 text-white"
-              >
-                ดาวโหลดเอกสาร <FaFileDownload />
-              </Link>
+              <div className="flex items-center justify-center gap-2">
+                <Link
+                  target="_blank"
+                  href={`${router.query.farmerId}/report`}
+                  className="button-focus flex items-center justify-center gap-2 rounded-lg bg-fifth-color px-5 py-1 text-white"
+                >
+                  ดาวโหลดเอกสาร <FaFileDownload />
+                </Link>
+                {userServer.role === "admin" && (
+                  <button
+                    onClick={() => setTriggerCreateCertificate((prev) => !prev)}
+                    className="button-focus flex items-center justify-center gap-2 rounded-lg bg-super-main-color px-5 py-1 text-white"
+                  >
+                    สร้างใบรับรอง KOS <PiCertificateFill />
+                  </button>
+                )}
+              </div>
             </div>
             <div className="flex w-max flex-col items-end justify-center">
               <div className="relative h-20 w-20 overflow-hidden rounded-full">
@@ -170,6 +199,15 @@ function Index({ userServer }: { userServer: User }) {
               )}
             </div>
           </div>
+
+          {certificates.isLoading ? (
+            <div className="h-40 w-11/12 animate-pulse rounded-lg bg-gray-400"></div>
+          ) : (
+            certificates.data &&
+            certificates.data?.length > 0 && (
+              <TableCertificate certificates={certificates} user={userServer} />
+            )
+          )}
 
           {farmer.data?.register && (
             <nav className="grid h-40 w-11/12 grid-cols-6 place-items-center gap-3">
