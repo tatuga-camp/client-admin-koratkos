@@ -30,7 +30,7 @@ function Certificate({
           alt="logo cover"
         />
         <div className="mt-5 flex gap-5">
-          <div className="relative h-36 w-36 overflow-hidden rounded-full ">
+          <div className="relative h-20 w-20 overflow-hidden rounded-full ">
             <Image
               priority
               src="https://storage.googleapis.com/koratkos-stroage/public/korat-logo-full.png"
@@ -39,7 +39,7 @@ function Certificate({
               alt="image logo"
             />
           </div>
-          <div className="relative h-36 w-36 overflow-hidden rounded-full ">
+          <div className="relative h-20 w-20 overflow-hidden rounded-full ">
             <Image
               priority
               src="/favicon.ico"
