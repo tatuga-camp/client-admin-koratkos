@@ -74,7 +74,7 @@ function Certificate({
         </h1>
         <h3 className="max-w-3xl break-words text-center text-xl ">
           ที่ตั้งแปลง หมู่ที่ {certificate.farmVillageNumber} ตำบล
-          {certificate.farmSubdistrict} อำเภอเมือง
+          {certificate.farmSubdistrict} อำเภอ
           {certificate.farmDistrict} จังหวัด{certificate.farmProvince}
         </h3>
         <div className="flex w-full items-center justify-center gap-3 ">
@@ -91,11 +91,19 @@ function Certificate({
         <div className="flex w-full items-center justify-center gap-3 text-xl ">
           <h3>
             วันที่รับรอง{" "}
-            {moment(certificate.certRequestDate).format("DD/MMMM/YYYY")}
+            {new Date(certificate.certRequestDate).toLocaleDateString("th-TH", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
           </h3>
           <h3>
-            วันที่หมดอาย{" "}
-            {moment(certificate.certExpiredDate).format("DD/MMMM/YYYY")}{" "}
+            วันที่หมดอายุ{" "}
+            {new Date(certificate.certExpiredDate).toLocaleDateString("th-TH", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}{" "}
           </h3>
         </div>
         <div className="flex w-full flex-col items-center justify-center gap-1 text-xl ">
