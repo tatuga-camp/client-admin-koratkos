@@ -16,7 +16,7 @@ function Certificate({
     window.print();
   }, []);
   return (
-    <div className="flex h-screen w-screen items-center justify-center border-4 border-orange-600 bg-transparent font-Anuphan ">
+    <div className="flex h-screen w-screen break-after-avoid items-center justify-center border-4 border-orange-600 bg-transparent font-Anuphan ">
       <main
         className="relative flex h-[99%] w-[99%] flex-col items-center
        justify-between gap-3 border-2 border-orange-600 py-5"
