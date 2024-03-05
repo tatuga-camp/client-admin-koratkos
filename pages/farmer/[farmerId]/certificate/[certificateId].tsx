@@ -107,15 +107,7 @@ function Certificate({
           </h3>
         </div>
         <div className="flex w-full flex-col items-center justify-center gap-1 text-xl ">
-          <div className="relative h-36 w-60">
-            <Image
-              src="https://storage.googleapis.com/koratkos-stroage/public/%E0%B8%95%E0%B8%A3%E0%B8%B2%20tatugacamp.png"
-              fill
-              priority
-              className="object-contain"
-              alt="image logo"
-            />
-          </div>
+          <div className="relative h-36 w-60"></div>
           <h3>({certificate.governorName})</h3>
           <h3>ผู้ว่าราชการจังหวัดนครราชสีมา</h3>
         </div>
