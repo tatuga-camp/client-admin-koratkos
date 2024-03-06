@@ -57,18 +57,15 @@ function Index({ userServer }: { userServer: User }) {
         <title>Evaluation Dashboard</title>
       </Head>
       <div className="mt-10 flex w-11/12 flex-col items-center justify-start gap-5 ">
-        {(user.data.organization === "university" ||
-          user.data.organization === "argiculturalProvince") && (
-          <header className=" grid w-full grid-cols-4 gap-2 px-5">
-            {statisticMenuCards().map((list, index) => (
-              <StatisticsCard
-                key={index}
-                title={list.title}
-                number={list.number}
-              />
-            ))}
-          </header>
-        )}
+        <header className=" grid w-full grid-cols-4 gap-2 px-5">
+          {statisticMenuCards().map((list, index) => (
+            <StatisticsCard
+              key={index}
+              title={list.title}
+              number={list.number}
+            />
+          ))}
+        </header>
         <main className="mt-10 flex w-full flex-col items-center justify-start gap-2">
           {plantType.isLoading || !plantType.data ? (
             <div className="h-96 w-full animate-pulse bg-gray-200"></div>
@@ -110,6 +107,7 @@ function Index({ userServer }: { userServer: User }) {
                       setRegisterFormsQuery((prev) => {
                         return {
                           ...prev,
+                          page: 1,
                           status: list.value as StatusEvaluation,
                         };
                       })
