@@ -16,4 +16,5 @@ export type HarvestLogDocKos5 = {
   marketing: string;
   farmerId: string;
   docKos05Id: string;
+  typeAmount: string;
 };
