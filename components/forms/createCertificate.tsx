@@ -175,7 +175,7 @@ function CreateCertificate({
           transition hover:bg-super-main-color"
             >
               <CiImageOn />
-              อัพโหลดรูป
+              อัพโหลดลายเซ็น
             </Button>
           </div>
         </FileTrigger>
