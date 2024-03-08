@@ -124,7 +124,7 @@ function CreateCertificate({
         </TextField>
         <TextField isRequired className="flex w-80 flex-col  items-start gap-2">
           <Label className="text-base font-semibold text-super-main-color">
-            ชื่อผู้ว่าราขการจังหวัด
+            ชื่อผู้ว่าราชการจังหวัด
           </Label>
           <Input
             type="text"
