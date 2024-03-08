@@ -54,6 +54,8 @@ export async function CreateCertificateService(input: {
   farmerId: string;
   certRequestDate: string;
   certExpiredDate: string;
+  file: File;
+  governorName: string;
 }): Promise<ResponseCreateCertificateService> {
   try {
     const cookies = parseCookies();
@@ -65,7 +67,7 @@ export async function CreateCertificateService(input: {
         ...input,
       },
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${access_token}`,
       },
     });
