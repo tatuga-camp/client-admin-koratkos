@@ -111,7 +111,7 @@ function Kos01Form({ kos01 }: Kos01FormProps) {
             </span>
           </div>
           <div className=" flex w-max flex-col  items-start justify-start gap-2 xl:flex-row">
-            <span className=" text-title">พิกัดแปลง (UTM) 47/48 P :</span>
+            <span className=" text-title">พิกัดแปลง:</span>
             <button
               onClick={() => setTriggerMap(true)}
               className="flex items-center   justify-center gap-2 text-sm font-semibold text-blue-700 transition 
