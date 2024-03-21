@@ -15,6 +15,9 @@ import { setCookie } from "nookies";
 import { useRouter } from "next/router";
 import { SignInService } from "../../../services/auth";
 import HomepageSidebar from "../../../components/sidebars/homepageSidebar";
+import { sponsors } from "../../../data/menus";
+import { backgroundImageBase64 } from "../../../data/base64Images";
+import Image from "next/image";
 
 type SignInData = {
   email?: string;
@@ -93,6 +96,25 @@ const Index = () => {
 
       {/* Right */}
       <div className="flex h-full w-full flex-col items-center lg:mt-6 lg:justify-center">
+        <ul className="flex w-full items-center justify-center gap-2">
+          {sponsors.map((sponsor, index) => {
+            return (
+              <li
+                key={index}
+                className=" relative h-10  w-10 overflow-hidden rounded-full"
+              >
+                <Image
+                  alt="logo"
+                  src={sponsor.url}
+                  fill
+                  blurDataURL={backgroundImageBase64}
+                  placeholder="blur"
+                  className="object-cover"
+                />
+              </li>
+            );
+          })}
+        </ul>
         <div className="my-8 flex w-full flex-col items-center justify-center  ">
           <section className="mt-7 lg:mt-0">
             <h1
