@@ -210,6 +210,7 @@ export async function UpdateListFormEvaluationService(
 
 type RequestCreateFileOnEvaulationService = {
   formEvaluationId: string;
+  farmerId: string;
   type: string;
   url: string;
 };

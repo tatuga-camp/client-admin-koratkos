@@ -162,6 +162,7 @@ function UpdateFormEvaluation({
           formEvaluationId: selectFormEvaluation.id as string,
           type: file.type as string,
           url: getSignURL.originalURL,
+          farmerId: selectFormEvaluation.farmerId as string,
         });
       }
 
