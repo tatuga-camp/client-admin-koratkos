@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import React, { FormEvent, useEffect, useState } from "react";
-import { FaSquarePhone } from "react-icons/fa6";
+import { FaFileArrowDown, FaRegFilePdf, FaSquarePhone } from "react-icons/fa6";
 import {
   ChildEvalTopicKos06,
   EvalTopicKos06,
@@ -8,8 +8,12 @@ import {
   ListFormEvaluation,
   StatusEvaluation,
 } from "../../model";
+import { GrFormView } from "react-icons/gr";
+
 import {
+  CreateFileOnEvaulationService,
   CreateListFormEvaluationService,
+  DeleteFileOnEvaluationService,
   GetFormEvaluationService,
   UpdateFormEvaluationService,
   UpdateListFormEvaluationService,
@@ -17,6 +21,7 @@ import {
 import { useRouter } from "next/router";
 import {
   Button,
+  FileTrigger,
   Form,
   Label,
   Radio,
@@ -25,6 +30,7 @@ import {
   TextField,
 } from "react-aria-components";
 import {
+  MdDelete,
   MdEmail,
   MdOutlineRadioButtonChecked,
   MdOutlineRadioButtonUnchecked,
@@ -33,6 +39,13 @@ import { IoIosCheckbox, IoIosCheckboxOutline } from "react-icons/io";
 import Swal from "sweetalert2";
 import { GetUserService } from "../../services/user";
 import moment from "moment";
+import { CiImageOn } from "react-icons/ci";
+import { IoDocumentText } from "react-icons/io5";
+import { BsFileEarmarkCode } from "react-icons/bs";
+import {
+  GetSignURLService,
+  UploadSignURLService,
+} from "../../services/google-storage";
 
 type UpdateFormEvaluationProps = {
   selectFormEvaluation: FormEvaluation;
@@ -45,6 +58,14 @@ function UpdateFormEvaluation({
     queryKey: ["user"],
     queryFn: () => GetUserService({}),
   });
+  const [files, setFiles] = useState<
+    {
+      id?: string;
+      url?: string;
+      type?: string;
+      file?: File;
+    }[]
+  >([]);
   const [evaluationListData, setEvaluationListData] = useState<
     {
       evalTopicKos06Id: string;
@@ -99,8 +120,17 @@ function UpdateFormEvaluation({
         reason: formEvaluation.data?.formEvaluation.reason as string,
       };
     });
+    setFiles(() => {
+      if (!formEvaluation.data?.formEvaluation?.files) return [];
+      return formEvaluation.data?.formEvaluation?.files.map((file) => {
+        return {
+          id: file.id,
+          url: file.url,
+          type: file.type,
+        };
+      });
+    });
   }, [formEvaluation.data]);
-
   const handleSummitEvaluation = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
@@ -112,6 +142,28 @@ function UpdateFormEvaluation({
           Swal.showLoading();
         },
       });
+
+      const filterFiles = files?.filter((file) => !file.id);
+
+      for (const file of filterFiles) {
+        const getSignURL = await GetSignURLService({
+          fileName: file.file?.name as string,
+          fileType: file.type as string,
+          farmerId: selectFormEvaluation.farmerId as string,
+        });
+
+        await UploadSignURLService({
+          contentType: file.type as string,
+          file: file.file as File,
+          signURL: getSignURL.signURL,
+        });
+
+        await CreateFileOnEvaulationService({
+          formEvaluationId: selectFormEvaluation.id as string,
+          type: file.type as string,
+          url: getSignURL.originalURL,
+        });
+      }
 
       const updatePromise = UpdateFormEvaluationService({
         query: {
@@ -162,6 +214,44 @@ function UpdateFormEvaluation({
       Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
+        text: error.message,
+      });
+    }
+  };
+
+  const handleDeleteFile = async ({
+    fileOnFormEvaluationId,
+    url,
+  }: {
+    fileOnFormEvaluationId: string;
+    url: string;
+  }) => {
+    try {
+      Swal.fire({
+        title: "กำลังลบ",
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+      if (!fileOnFormEvaluationId) {
+        const unDeleteFiles = files?.filter((file) => file.url !== url);
+        setFiles(() => unDeleteFiles);
+      } else {
+        const deleteFile = await DeleteFileOnEvaluationService({
+          fileOnFormEvaluationId: fileOnFormEvaluationId,
+        });
+        await formEvaluation.refetch();
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: "ลบไฟล์สำเร็จ",
+        timer: 1500,
+      });
+    } catch (error: any) {
+      Swal.fire({
+        icon: "error",
+        title: "ผิดพลาด",
         text: error.message,
       });
     }
@@ -380,6 +470,79 @@ function UpdateFormEvaluation({
               </h3>
             </div>
           )}
+          <FileTrigger
+            allowsMultiple
+            onSelect={(e) => {
+              if (!e) return null;
+
+              const files: FileList = e;
+
+              Array.from(files).forEach((file) => {
+                const url = URL.createObjectURL(file);
+                const reader = new FileReader();
+
+                setFiles((prev) => {
+                  if (!prev) return [{ file, url: url }];
+                  return [...prev, { file, url: url, type: file.type }];
+                });
+
+                reader.readAsDataURL(file);
+              });
+            }}
+          >
+            <Button
+              className=" flex w-80 items-center justify-center gap-2 rounded-lg bg-main-color px-4 py-1 font-semibold 
+          text-white hover:bg-super-main-color"
+            >
+              <FaFileArrowDown />
+              อัพโหลดไฟล์แนบ
+            </Button>
+          </FileTrigger>
+          <div className="grid w-full grid-cols-3 gap-2">
+            {files?.map((file, index) => {
+              const fileName = file?.url?.split("/").pop();
+              return (
+                <div
+                  key={index}
+                  className="relative  flex h-10 w-full cursor-pointer select-none
+                        items-center justify-between  gap-2 rounded-xl bg-purple-100 px-5 
+                        ring-2 ring-purple-500 drop-shadow-sm
+                     transition duration-75 "
+                >
+                  <div className="flex justify-center gap-1">
+                    <div className="flex items-center justify-center text-purple-700">
+                      <BsFileEarmarkCode />
+                    </div>
+                    <span className="w-max max-w-[7rem] truncate text-sm md:max-w-40 ">
+                      {file?.id ? fileName : file.file?.name}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <div
+                      onClick={() => window.open(file.url, "_blank")}
+                      className=" z-40 flex
+                     cursor-pointer items-center justify-center gap-2 rounded-md bg-green-500 p-1  text-xl text-white"
+                    >
+                      <GrFormView />
+                    </div>
+                    <div
+                      onClick={() => {
+                        handleDeleteFile({
+                          fileOnFormEvaluationId: file.id as string,
+                          url: file.url as string,
+                        });
+                      }}
+                      className=" z-40 flex cursor-pointer 
+                     items-center justify-center gap-2 rounded-md bg-red-500 p-1  text-xl text-white"
+                    >
+                      <MdDelete />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
           <TextField
             onChange={(e) => {
               setEvaluationData((prev) => {

@@ -3,6 +3,7 @@ import { parseCookies } from "nookies";
 import {
   ChildEvalTopicKos06,
   EvalTopicKos06,
+  FileOnKos06,
   FormEvaluation,
   ListFormEvaluation,
   StatusEvaluation,
@@ -108,7 +109,7 @@ type RequestGetFormEvaluationService = {
   formEvaluationId: string;
 };
 export type ResponseGetFormEvaluationService = {
-  formEvaluation: FormEvaluation & { user: User };
+  formEvaluation: FormEvaluation & { user: User; files: FileOnKos06[] };
 } & {
   topics: (EvalTopicKos06 & {
     childs: (ChildEvalTopicKos06 & {
@@ -201,6 +202,64 @@ export async function UpdateListFormEvaluationService(
       },
     });
     return listFormEvaluation.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
+
+type RequestCreateFileOnEvaulationService = {
+  formEvaluationId: string;
+  type: string;
+  url: string;
+};
+export type ResponseCreateFileOnEvaulationService = FileOnKos06;
+export async function CreateFileOnEvaulationService(
+  input: RequestCreateFileOnEvaulationService,
+): Promise<ResponseCreateFileOnEvaulationService> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+    const fileKos06 = await axios({
+      method: "POST",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/evaluation/create-fileFormEvaluation`,
+      data: {
+        ...input,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return fileKos06.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
+
+type RequestDeleteFileOnEvaluationService = {
+  fileOnFormEvaluationId: string;
+};
+export type ResponseDeleteFileOnEvaluationService = { message: string };
+export async function DeleteFileOnEvaluationService(
+  input: RequestDeleteFileOnEvaluationService,
+): Promise<ResponseDeleteFileOnEvaluationService> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+    const fileKos06 = await axios({
+      method: "DELETE",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/evaluation/delete-fileFormEvaluation`,
+      params: {
+        ...input,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return fileKos06.data;
   } catch (error: any) {
     console.error(error.response.data);
     throw error?.response?.data;

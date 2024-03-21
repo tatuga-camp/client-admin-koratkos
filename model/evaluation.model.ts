@@ -52,3 +52,13 @@ export type ListFormEvaluation = {
 };
 
 export type StatusEvaluation = "pending" | "approved" | "rejected";
+
+export type FileOnKos06 = {
+  id: string;
+  createAt: string;
+  updateAt: string;
+  url: string;
+  type: string;
+  kos06Id: string;
+  userId: string;
+};

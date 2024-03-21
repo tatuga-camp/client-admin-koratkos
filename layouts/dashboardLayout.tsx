@@ -57,7 +57,7 @@ function DashboardLayout({ children, user }: LayoutProps) {
               {user.firstName} {user.lastName}
             </div>
 
-            <div className="flex items-center justify-start gap-2">
+            <div className="flex flex-col items-start justify-start gap-2">
               <span className="rounded-md bg-secondary-color px-2 py-1 text-sm text-white">
                 {user.email}
               </span>
