@@ -13,6 +13,7 @@ import Kos06Form from "../../../components/forms/kos06Form";
 import Kos05Form from "../../../components/forms/kos05Form";
 import { useQuery } from "@tanstack/react-query";
 import {
+  DeleteFarmerService,
   GetFarmerKos01Service,
   GetFarmerKos02Service,
   GetFarmerKos03Service,
@@ -41,6 +42,7 @@ import {
   GetAllCertificateService,
 } from "../../../services/certificate";
 import CreateCertificate from "../../../components/forms/createCertificate";
+import { MdDelete } from "react-icons/md";
 
 function Index({ userServer }: { userServer: User }) {
   const [selectMenu, setSelectMenu] = useState<number>(0);
@@ -88,6 +90,48 @@ function Index({ userServer }: { userServer: User }) {
       GetAllCertificateService({ farmerId: router.query.farmerId as string }),
   });
 
+  const handleDeleteFarmer = async ({
+    farmerId,
+    name,
+  }: {
+    farmerId: string;
+    name: string;
+  }) => {
+    let content = document.createElement("div");
+    const replacedText = name.replace(/ /g, "_");
+    content.innerHTML =
+      "<div>กรุณาพิมพ์ข้อความนี้</div> <strong>" +
+      replacedText +
+      "</strong> <div>เพื่อลบเกษตรกร</div>";
+    const { value } = await Swal.fire({
+      title: "ยืนยันการลบเกษตรกร",
+      input: "text",
+      html: content,
+      footer:
+        "<strong>หากลบแล้วคุณจะไม่สามารถกู้คืนข้อมูลได้ และ ข้อมูลทุกอย่างที่เกี่ยวข้องกับเกษตรกรท่านนี้จะถูกลบทั้งหมด</strong>",
+      showCancelButton: true,
+      inputValidator: (value) => {
+        if (value !== replacedText) {
+          return "กรุณาพิมพ์ข้อความยืนยันให้ถูกต้อง";
+        }
+      },
+    });
+    if (value) {
+      try {
+        Swal.fire({
+          title: "กำลังลบข้อมูล",
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+        await DeleteFarmerService({ farmerId });
+        router.push("/");
+        Swal.fire("success", "ลบเกษตรกรสำเร็จ", "success");
+      } catch (error: any) {
+        Swal.fire("error", error.message.toString(), "error");
+      }
+    }
+  };
   return (
     <DashboardLayout user={userServer}>
       <Head>
@@ -102,7 +146,7 @@ function Index({ userServer }: { userServer: User }) {
       <div className="mt-10 flex w-full flex-col items-center justify-start gap-5">
         <header className="flex w-full flex-col items-center gap-5">
           <div className="flex h-max w-11/12 justify-between rounded-lg bg-fourth-color p-5">
-            <div className="flex w-96 flex-col items-start justify-center">
+            <div className="flex w-max flex-col items-start justify-center">
               <h1 className="text-2xl font-semibold text-super-main-color">
                 ผู้รับการประเมิน :
               </h1>
@@ -154,7 +198,7 @@ function Index({ userServer }: { userServer: User }) {
                   />
                 )}
               </h4>
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center  justify-center gap-2 ">
                 <Link
                   target="_blank"
                   href={`${router.query.farmerId}/report`}
@@ -170,6 +214,18 @@ function Index({ userServer }: { userServer: User }) {
                     สร้างใบรับรอง KOS <PiCertificateFill />
                   </button>
                 )}
+                <button
+                  onClick={() =>
+                    handleDeleteFarmer({
+                      farmerId: farmer.data?.id as string,
+                      name: farmer.data?.firstName as string,
+                    })
+                  }
+                  className="flex items-center justify-center gap-2 rounded-lg bg-red-300
+                     px-3 py-1 text-red-700 drop-shadow-md transition duration-150 hover:scale-105"
+                >
+                  <MdDelete /> ลบเกษตรกร
+                </button>
               </div>
             </div>
             <div className="flex w-max flex-col items-end justify-center">
