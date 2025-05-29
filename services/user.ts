@@ -56,6 +56,30 @@ export async function UploadProfileUserService(
     throw error?.response?.data;
   }
 }
+type RequestImpersonateUserService = {
+  userId: string;
+};
+export async function ImpersonateUserService(
+  input: RequestImpersonateUserService,
+): Promise<{ accessToken: string }> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+
+    const user = await axios({
+      method: "POST",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/${input.userId}/impersonate`,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return user.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
 
 type RequestUpdatePasswordUserService = {
   password: string;

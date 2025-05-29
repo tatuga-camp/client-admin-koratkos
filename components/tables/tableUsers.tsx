@@ -7,6 +7,9 @@ import { organizationLists } from "../../data/organization";
 import { AiOutlineUserDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { DeleteUserService, UnDeleteUserService } from "../../services/admin";
+import { ImpersonateUserService } from "../../services/user";
+import { setCookie } from "nookies";
+import { MdLogin } from "react-icons/md";
 
 type TableUsersProps = {
   users: UseQueryResult<User[], Error>;
@@ -78,6 +81,25 @@ function TableUsers({ users }: TableUsersProps) {
         title: "เปิดการใช้งานสำเร็จ",
         text: "เปิดการใช้งานสำเร็จ",
       });
+    } catch (error: any) {
+      console.log(error);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: error.message,
+      });
+    }
+  };
+
+  const handleImersonate = async (userId: string) => {
+    try {
+      const accessToken = await ImpersonateUserService({ userId });
+      setCookie(null, "access_token", accessToken.accessToken, {
+        maxAge: 2 * 24 * 60 * 60, // Cookie expiration time in seconds (e.g., 30 days)
+        path: "/", // Cookie path
+      });
+
+      window.location.reload();
     } catch (error: any) {
       console.log(error);
       Swal.fire({
@@ -182,6 +204,14 @@ function TableUsers({ users }: TableUsersProps) {
                           ปิดการใช้งาน
                         </button>
                       )}
+                      <button
+                        onClick={() => handleImersonate(user.id)}
+                        className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-red-600 
+                    px-2 py-1 text-white transition duration-100 hover:scale-105 hover:bg-red-700"
+                      >
+                        <MdLogin />
+                        เข้าสู่ระบบ
+                      </button>
                     </div>
                   </td>
                 </tr>
