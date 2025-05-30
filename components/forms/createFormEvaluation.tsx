@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Form, Label, TextField } from "react-aria-components";
 import { FormEvaluation } from "../../model";
 import { Calendar } from "primereact/calendar";
@@ -9,6 +9,7 @@ import {
 } from "../../services/evaluation";
 import { useRouter } from "next/router";
 import { UseQueryResult } from "@tanstack/react-query";
+import { Nullable } from "primereact/ts-helpers";
 
 type ConfirmStartEvalationProps = {
   selectFormEvaluation: FormEvaluation;
@@ -19,9 +20,13 @@ function CreateFormEvaluation({
   formEvaluations,
 }: ConfirmStartEvalationProps) {
   const router = useRouter();
+  const [date, setDate] = useState<Nullable<Date>>(new Date());
   const handleSummitCreateFormEvaluation = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
+      if (!date) {
+        throw new Error("เลือกวันที่");
+      }
       Swal.fire({
         title: "กำลังเริ่มการประเมิน",
         text: "กรุณารอสักครู่",
@@ -32,7 +37,7 @@ function CreateFormEvaluation({
 
       const create = await CrateFormEvaluationService({
         farmerId: router.query.farmerId as string,
-        evaluatedDate: new Date().toISOString(),
+        evaluatedDate: date.toISOString(),
       });
       await formEvaluations.refetch();
       Swal.fire({
@@ -65,9 +70,11 @@ function CreateFormEvaluation({
           วันที่เริ่มการประเมิน
         </Label>
         <Calendar
-          disabled
           dateFormat="dd/MM/yy"
-          value={new Date()}
+          value={date}
+          onChange={(e) => {
+            setDate(e.value);
+          }}
           className="p-3"
           locale="th"
         />

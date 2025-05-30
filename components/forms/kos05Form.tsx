@@ -1,8 +1,10 @@
 import { UseQueryResult } from "@tanstack/react-query";
-import React from "react";
-import { ResponseGetFarmerKos05Service } from "../../services/farmer";
-import { GiWeight } from "react-icons/gi";
 import moment from "moment";
+import { Calendar } from "primereact/calendar";
+import { Input, Label, TextField } from "react-aria-components";
+import { ResponseGetFarmerKos05Service } from "../../services/farmer";
+import PlantCombox from "../combox/plantCombox";
+import TypeAmountCombox from "../combox/typeAmountCombox";
 type Kos05FormProps = {
   kos05: UseQueryResult<ResponseGetFarmerKos05Service, Error>;
 };
@@ -16,33 +18,75 @@ function Kos05Form({ kos05 }: Kos05FormProps) {
         return (
           <section
             key={index}
-            className="flex h-max w-full flex-col gap-3 rounded-lg bg-[#F1E4C3] p-5"
+            className="flex h-max w-full flex-col gap-3 rounded-lg  p-2 ring-1 ring-black"
           >
             <header className="flex items-center justify-between">
               <div className="rounded-lg bg-[#502D16] px-4 py-1 text-xl font-semibold text-white">
                 แปลงที่ {harvestLog.plotNumber}
               </div>
             </header>
-            <main className="flex h-max w-full flex-col items-center justify-center gap-2">
-              <h1 className="max-w-80 truncate text-2xl font-semibold text-[#502D16] ">
-                {harvestLog.plantType}
-              </h1>
-              <div className="flex w-full items-center justify-between gap-2">
-                <div className="flex items-center gap-1 text-lg text-super-main-color">
-                  <div className="flex items-center justify-center rounded-full bg-super-main-color p-1 text-white">
-                    <GiWeight />
-                  </div>
-                  {harvestLog.amount.toLocaleString()} {harvestLog.typeAmount}
-                </div>
-                <span className="text-base text-super-main-color">
-                  {harvestDate}
-                </span>
+            <Label className="mt-10 w-80 rounded-lg bg-third-color  py-2 text-center text-lg font-bold text-black">
+              เพิ่มบันทึกการเก็บเกี่ยว
+            </Label>
+            <TextField className="flex w-80  flex-col items-center justify-start">
+              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
+                แปลงที่ :
+              </Label>
+              <Input
+                required
+                type="number"
+                name="plotNumber"
+                value={harvestLog?.plotNumber}
+                inputMode="numeric"
+                className="w-full rounded-lg p-3 ring-1 ring-gray-300"
+              />
+            </TextField>
+            <TextField className="flex w-80 flex-col  items-start justify-start gap-2 ">
+              <Label className="w-max text-xl font-semibold text-super-main-color">
+                วันที่เก็บเกี่ยว :
+              </Label>
+              <Calendar
+                required
+                className="w-full"
+                dateFormat="dd/MM/yy"
+                value={
+                  harvestLog?.harvestDate
+                    ? new Date(harvestLog?.harvestDate)
+                    : null
+                }
+                locale="th"
+                disabled
+              />
+            </TextField>
+            <PlantCombox harvestLog={harvestLog} />
+            <TextField className="flex w-80  flex-col items-center justify-start">
+              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
+                ปริมาณ :
+              </Label>
+              <div className="flex w-full items-start justify-center gap-2">
+                <Input
+                  required
+                  name="amount"
+                  value={harvestLog?.amount}
+                  type="number"
+                  inputMode="numeric"
+                  className="w-full rounded-lg p-3 ring-1 ring-gray-300"
+                />
+                <TypeAmountCombox factor={harvestLog} />
               </div>
-            </main>
-            <p className="mt-4 h-max w-full break-words font-semibold  text-super-main-color ">
-              <span className="text-black">แหล่งจำหน่าย :</span>
-              <span>{harvestLog.marketing}</span>
-            </p>
+            </TextField>
+            <TextField className="flex w-80  flex-col items-center justify-start">
+              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
+                การตลาด :
+              </Label>
+              <Input
+                required
+                name="marketing"
+                value={harvestLog?.marketing}
+                type="text"
+                className="w-full rounded-lg p-3 ring-1 ring-gray-300"
+              />
+            </TextField>
           </section>
         );
       })}

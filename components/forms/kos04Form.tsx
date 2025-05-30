@@ -3,6 +3,9 @@ import React from "react";
 import { ResponseGetFarmerKos04Service } from "../../services/farmer";
 import { GiWeight } from "react-icons/gi";
 import moment from "moment";
+import { Input, Label, TextField } from "react-aria-components";
+import { Calendar } from "primereact/calendar";
+import TypeAmountCombox from "../combox/typeAmountCombox";
 
 type Kos04FormProps = {
   kos04: UseQueryResult<ResponseGetFarmerKos04Service, Error>;
@@ -17,32 +20,71 @@ function Kos04Form({ kos04 }: Kos04FormProps) {
         return (
           <section
             key={index}
-            className="flex h-max w-full flex-col gap-3 rounded-lg bg-[#F1E4C3] p-5"
+            className="flex h-max w-full flex-col gap-3 rounded-lg  p-2 ring-1 ring-black"
           >
             <header className="flex items-center justify-between">
               <div className="rounded-lg bg-[#502D16] px-4 py-1 text-xl font-semibold text-white">
                 ปัจจัยที่ {index + 1}
               </div>
             </header>
-            <main className="flex flex-col items-center justify-center gap-2">
-              <h1 className="max-w-80 truncate text-2xl font-semibold text-[#502D16] ">
-                {factor.prodFactorTypes}
-              </h1>
-              <div className="flex w-full items-center justify-between gap-2">
-                <div className="flex items-center gap-1 text-lg text-super-main-color">
-                  <div className="flex items-center justify-center rounded-full bg-super-main-color p-1 text-white">
-                    <GiWeight />
-                  </div>
-                  {factor.amount.toLocaleString()} {factor.typeAmount}
-                </div>
-                <span className="text-base text-super-main-color">
-                  {purchaseDate}
-                </span>
+            <Label className="mt-10 w-80 rounded-lg bg-third-color  py-2 text-center text-lg font-bold text-black">
+              ปัจจัยการผลิต - {factor.prodFactorTypes}
+            </Label>
+
+            <TextField className="flex w-80 flex-col  items-start justify-start gap-2 ">
+              <Label className="w-max text-xl font-semibold text-super-main-color">
+                วันที่(ที่ซื้อ/ได้มา) :
+              </Label>
+              <Calendar
+                className="w-full"
+                dateFormat="dd/MM/yy"
+                disabled
+                value={
+                  factor?.purchaseDate ? new Date(factor?.purchaseDate) : null
+                }
+                locale="th"
+              />
+            </TextField>
+            <TextField className="flex w-80  flex-col items-center justify-start">
+              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
+                ชนิดของปัจจัย :
+              </Label>
+              <Input
+                disabled
+                name="prodFactorTypes"
+                value={factor?.prodFactorTypes}
+                type="text"
+                className="w-full rounded-lg p-3 ring-1 ring-gray-300"
+              />
+            </TextField>
+            <TextField className="flex w-80  flex-col items-center justify-start">
+              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
+                ปริมาณ :
+              </Label>
+              <div className="flex w-full items-start justify-center gap-2">
+                <Input
+                  disabled
+                  name="amount"
+                  value={factor?.amount}
+                  type="number"
+                  inputMode="numeric"
+                  className="h-12 w-full rounded-lg p-3 ring-1 ring-gray-300"
+                />
+                <TypeAmountCombox factor={factor} />
               </div>
-              <span className="mt-4 text-lg font-semibold text-super-main-color">
-                <span className="text-black">แหล่งที่มา :</span> {factor.source}
-              </span>
-            </main>
+            </TextField>
+            <TextField className="flex w-80  flex-col items-center justify-start">
+              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
+                แหล่งที่มา :
+              </Label>
+              <Input
+                disabled
+                name="source"
+                value={factor?.source}
+                type="text"
+                className="w-full rounded-lg p-3 ring-1 ring-gray-300"
+              />
+            </TextField>
           </section>
         );
       })}
