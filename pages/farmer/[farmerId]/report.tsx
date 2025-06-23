@@ -24,7 +24,7 @@ function Report({
   if (error) {
     return (
       <div
-        className="flex h-screen w-screen flex-col items-center justify-center gap-5 font-Anuphan
+        className="flex  h-screen w-screen flex-col items-center justify-center gap-5 font-Anuphan
      font-semibold text-super-main-color"
       >
         <div className="flex h-20 w-20 items-center justify-center">

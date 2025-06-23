@@ -1,23 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import React, { FormEvent, useEffect, useState } from "react";
-import { FaFileArrowDown, FaRegFilePdf, FaSquarePhone } from "react-icons/fa6";
-import {
-  ChildEvalTopicKos06,
-  EvalTopicKos06,
-  FormEvaluation,
-  ListFormEvaluation,
-  StatusEvaluation,
-} from "../../model";
+import React, { useEffect, useState } from "react";
+import { FaFileArrowDown, FaSquarePhone } from "react-icons/fa6";
 import { GrFormView } from "react-icons/gr";
+import { FormEvaluation, StatusEvaluation } from "../../model";
 
-import {
-  CreateFileOnEvaulationService,
-  CreateListFormEvaluationService,
-  DeleteFileOnEvaluationService,
-  GetFormEvaluationService,
-  UpdateFormEvaluationService,
-  UpdateListFormEvaluationService,
-} from "../../services/evaluation";
+import moment from "moment";
 import { useRouter } from "next/router";
 import {
   Button,
@@ -29,23 +16,23 @@ import {
   TextArea,
   TextField,
 } from "react-aria-components";
-import {
-  MdDelete,
-  MdEmail,
-  MdOutlineRadioButtonChecked,
-  MdOutlineRadioButtonUnchecked,
-} from "react-icons/md";
-import { IoIosCheckbox, IoIosCheckboxOutline } from "react-icons/io";
-import Swal from "sweetalert2";
-import { GetUserService } from "../../services/user";
-import moment from "moment";
-import { CiImageOn } from "react-icons/ci";
-import { IoDocumentText } from "react-icons/io5";
 import { BsFileEarmarkCode } from "react-icons/bs";
+import { IoIosCheckbox, IoIosCheckboxOutline } from "react-icons/io";
+import { MdDelete, MdEmail } from "react-icons/md";
+import Swal from "sweetalert2";
+import {
+  CreateFileOnEvaulationService,
+  CreateListFormEvaluationService,
+  DeleteFileOnEvaluationService,
+  GetFormEvaluationService,
+  UpdateFormEvaluationService,
+  UpdateListFormEvaluationService,
+} from "../../services/evaluation";
 import {
   GetSignURLService,
   UploadSignURLService,
 } from "../../services/google-storage";
+import { GetUserService } from "../../services/user";
 
 type UpdateFormEvaluationProps = {
   selectFormEvaluation: FormEvaluation;
@@ -83,6 +70,12 @@ function UpdateFormEvaluation({
     id?: string;
     status?: StatusEvaluation;
     reason?: string;
+    first_evaluator_name?: string;
+    first_evaluator_position?: string;
+    second_evaluator_name?: string;
+    second_evaluator_position?: string;
+    third_evaluator_name?: string;
+    third_evaluator_position?: string;
   }>();
 
   const formEvaluation = useQuery({
@@ -118,6 +111,18 @@ function UpdateFormEvaluation({
         id: formEvaluation.data?.formEvaluation.id as string,
         status: formEvaluation.data?.formEvaluation.status as StatusEvaluation,
         reason: formEvaluation.data?.formEvaluation.reason as string,
+        first_evaluator_name:
+          formEvaluation.data?.formEvaluation.first_evaluator_name,
+        first_evaluator_position:
+          formEvaluation.data?.formEvaluation.first_evaluator_position,
+        second_evaluator_name:
+          formEvaluation.data?.formEvaluation.second_evaluator_name,
+        second_evaluator_position:
+          formEvaluation.data?.formEvaluation.second_evaluator_position,
+        third_evaluator_name:
+          formEvaluation.data?.formEvaluation.third_evaluator_name,
+        third_evaluator_position:
+          formEvaluation.data?.formEvaluation.third_evaluator_position,
       };
     });
     setFiles(() => {
@@ -143,6 +148,16 @@ function UpdateFormEvaluation({
         },
       });
 
+      if (
+        !evaluationData?.first_evaluator_name ||
+        !evaluationData.first_evaluator_position ||
+        !evaluationData.second_evaluator_name ||
+        !evaluationData.second_evaluator_position ||
+        !evaluationData.third_evaluator_name ||
+        !evaluationData.third_evaluator_position
+      ) {
+        throw new Error("กรอกข้อมูลชื่อผู้ประเมินให้ครบ");
+      }
       const filterFiles = files?.filter((file) => !file.id);
 
       for (const file of filterFiles) {
@@ -173,6 +188,12 @@ function UpdateFormEvaluation({
         },
         body: {
           ...evaluationData,
+          first_evaluator_name: evaluationData.first_evaluator_name,
+          first_evaluator_position: evaluationData.first_evaluator_position,
+          second_evaluator_name: evaluationData.second_evaluator_name,
+          second_evaluator_position: evaluationData.second_evaluator_position,
+          third_evaluator_name: evaluationData.third_evaluator_name,
+          third_evaluator_position: evaluationData.third_evaluator_position,
           approveByUserId: user.data?.id as string,
         },
       });
@@ -563,6 +584,102 @@ function UpdateFormEvaluation({
               className="h-32 w-full resize-none rounded-lg border-0 p-5 text-lg outline-none ring-1 ring-black"
             ></TextArea>
           </TextField>
+
+          <section className="grid w-full grid-cols-3">
+            <div className="flex flex-col items-center justify-center gap-3">
+              <span>ผู้ประเมินคนที่ 1</span>
+              <input
+                value={evaluationData?.first_evaluator_name}
+                onChange={(e) => {
+                  setEvaluationData((prev) => {
+                    return {
+                      ...prev,
+                      first_evaluator_name: e.target.value,
+                    };
+                  });
+                }}
+                required
+                placeholder="ชื่อผู้ประเมินคนที่ 1"
+                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
+              />
+              <input
+                value={evaluationData?.first_evaluator_position}
+                onChange={(e) => {
+                  setEvaluationData((prev) => {
+                    return {
+                      ...prev,
+                      first_evaluator_position: e.target.value,
+                    };
+                  });
+                }}
+                required
+                placeholder="ตำแหน่งผู้ประเมินคนที่ 1"
+                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
+              />
+            </div>
+            <div className="flex flex-col items-center justify-center gap-3">
+              <span>ผู้ประเมินคนที่ 2</span>
+              <input
+                value={evaluationData?.second_evaluator_name}
+                onChange={(e) => {
+                  setEvaluationData((prev) => {
+                    return {
+                      ...prev,
+                      second_evaluator_name: e.target.value,
+                    };
+                  });
+                }}
+                required
+                placeholder="ชื่อผู้ประเมินคนที่ 2"
+                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
+              />
+              <input
+                value={evaluationData?.second_evaluator_position}
+                onChange={(e) => {
+                  setEvaluationData((prev) => {
+                    return {
+                      ...prev,
+                      second_evaluator_position: e.target.value,
+                    };
+                  });
+                }}
+                required
+                placeholder="ตำแหน่งผู้ประเมินคนที่ 2"
+                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
+              />
+            </div>
+            <div className="flex flex-col items-center justify-center gap-3">
+              <span>ผู้ประเมินคนที่ 3</span>
+              <input
+                value={evaluationData?.third_evaluator_name}
+                onChange={(e) => {
+                  setEvaluationData((prev) => {
+                    return {
+                      ...prev,
+                      third_evaluator_name: e.target.value,
+                    };
+                  });
+                }}
+                required
+                placeholder="ชื่อผู้ประเมินคนที่ 3"
+                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
+              />
+              <input
+                value={evaluationData?.third_evaluator_position}
+                onChange={(e) => {
+                  setEvaluationData((prev) => {
+                    return {
+                      ...prev,
+                      third_evaluator_position: e.target.value,
+                    };
+                  });
+                }}
+                required
+                placeholder="ตำแหน่งผู้ประเมินคนที่ 3"
+                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
+              />
+            </div>
+          </section>
 
           <Button
             type="submit"

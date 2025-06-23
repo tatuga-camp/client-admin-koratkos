@@ -77,6 +77,12 @@ type RequestUpdateFormEvaluationService = {
     reason?: string;
     status?: StatusEvaluation;
     approveByUserId?: string;
+    first_evaluator_name: string;
+    first_evaluator_position: string;
+    second_evaluator_name: string;
+    second_evaluator_position: string;
+    third_evaluator_name: string;
+    third_evaluator_position: string;
   };
 };
 export type ResponseUpdateFormEvaluationService = FormEvaluation;
