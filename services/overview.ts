@@ -91,7 +91,10 @@ export type GroupsType = {
     raiTotal: number;
   };
 };
-export async function GetAllPlantTypeByGroupService(): Promise<GroupsType[]> {
+export async function GetAllPlantTypeByGroupService(input?: {
+  amphure?: string;
+  tambon?: string;
+}): Promise<GroupsType[]> {
   try {
     const cookies = parseCookies();
     const access_token = cookies.access_token;
@@ -99,6 +102,37 @@ export async function GetAllPlantTypeByGroupService(): Promise<GroupsType[]> {
     const plants = await axios({
       method: "GET",
       url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/overview/get-plants/by-group`,
+      params: input,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return plants.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
+
+export type GroupsFarmerType = {
+  _count: {
+    [key in "district" | "subdistrict"]: number;
+  };
+  district: string;
+  subdistrict: string;
+};
+export async function GetAllFarmereByGroupService(input?: {
+  amphure?: string;
+}): Promise<GroupsFarmerType[]> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+
+    const plants = await axios({
+      method: "GET",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/overview/get-farmer/by-group`,
+      params: input,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${access_token}`,

@@ -1,6 +1,5 @@
 import axios from "axios";
-import { parseCookies } from "nookies";
-import { Amphure, Province, Tambon } from "../model";
+import { Amphure, Tambon } from "../model";
 
 export type ResponseGetAllAmphuresByProvinceService = Amphure[];
 

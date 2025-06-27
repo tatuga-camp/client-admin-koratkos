@@ -13,6 +13,8 @@ export type RequestGetAllReadyRegisterFormByPage = {
   limit: number;
   status?: StatusEvaluation | "all";
   firstName?: string;
+  amphure?: string;
+  tambon?: string;
   orderBy?: {
     summitEvaluationDate: "asc" | "desc";
   };

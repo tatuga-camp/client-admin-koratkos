@@ -10,13 +10,13 @@ export type Province = {
 };
 
 export type Amphure = {
-  id?: string;
-  originalId?: number;
-  created_at?: string;
-  updated_at?: string;
-  deleted_at?: string | null;
-  province_id?: number;
-  name_en?: string;
+  id: string;
+  originalId: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  province_id: number;
+  name_en: string;
   name_th: string;
 };
 

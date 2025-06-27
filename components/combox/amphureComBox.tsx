@@ -1,12 +1,12 @@
 import { Combobox, Transition } from "@headlessui/react";
 import { useQuery } from "@tanstack/react-query";
-import React, { Fragment, useEffect, useState } from "react";
-import { Input, Label, TextField } from "react-aria-components";
+import React, { Fragment, useState } from "react";
+import { Label } from "react-aria-components";
 import { FaCheck } from "react-icons/fa";
 import { RiExpandUpDownLine } from "react-icons/ri";
-import { GetAllAmphuresByProvinceService } from "../../services/thai-data";
 import { Amphure } from "../../model";
 import { SignUpData } from "../../pages/auth/sign-up";
+import { GetAllAmphuresByProvinceService } from "../../services/thai-data";
 
 type AmphureComBoxProps = {
   signUpData: SignUpData | undefined;
