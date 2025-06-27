@@ -93,7 +93,7 @@ function Index({ userServer }: { userServer: User }) {
           ))}
         </header>
         <main className="mt-10 flex w-full flex-col items-center justify-start gap-2">
-          <ChartPlantComponent />
+          <ChartPlantComponent user={userServer} />
           <ChartFarmerComponent />
 
           <h1 className="mt-5 w-full text-left text-2xl font-extrabold text-[#5C430D]">
@@ -122,25 +122,27 @@ function Index({ userServer }: { userServer: User }) {
               />
               <IoSearchCircleSharp className="absolute bottom-0 left-2 top-0 m-auto text-3xl text-super-main-color" />
             </SearchField>
-            <Dropdown
-              placeholder="เลือกอำเภอ"
-              value={selectAumpure}
-              onChange={(e: DropdownChangeEvent) => {
-                setselectAumpure(e.value);
-                setSelectTambon(null);
-                setRegisterFormsQuery((prev) => {
-                  return {
-                    ...prev,
-                    page: 1,
-                  };
-                });
-              }}
-              options={amphures.data}
-              optionLabel="name_th"
-              className="w-60"
-              loading={amphures.isLoading}
-              showClear
-            />
+            {userServer.role === "admin" && (
+              <Dropdown
+                placeholder="เลือกอำเภอ"
+                value={selectAumpure}
+                onChange={(e: DropdownChangeEvent) => {
+                  setselectAumpure(e.value);
+                  setSelectTambon(null);
+                  setRegisterFormsQuery((prev) => {
+                    return {
+                      ...prev,
+                      page: 1,
+                    };
+                  });
+                }}
+                options={amphures.data}
+                optionLabel="name_th"
+                className="w-60"
+                loading={amphures.isLoading}
+                showClear
+              />
+            )}
             {tambons.data && (
               <Dropdown
                 placeholder="เลือกตำบล"

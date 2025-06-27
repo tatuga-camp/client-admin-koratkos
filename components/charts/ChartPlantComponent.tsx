@@ -3,7 +3,7 @@ import { Chart, ChartData, registerables } from "chart.js";
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
-import { Amphure, Tambon } from "../../model";
+import { Amphure, Tambon, User } from "../../model";
 import {
   GetAllPlantTypeByGroupService,
   GroupsType,
@@ -15,10 +15,12 @@ import {
 
 Chart.register(...registerables);
 
-type ChartProps = {};
+type ChartProps = {
+  user: User;
+};
 const menus = ["จำนวนชนิดพืช", "พื้นที่หน่วยไร่"];
 
-function ChartPlantComponent({}: ChartProps) {
+function ChartPlantComponent({ user }: ChartProps) {
   const [selectAumpure, setselectAumpure] = useState<Amphure | null>(null);
   const [selectTambon, setSelectTambon] = useState<Tambon | null>(null);
   const plantType = useQuery({
@@ -104,19 +106,21 @@ function ChartPlantComponent({}: ChartProps) {
         ชนิดพืชที่ขอการรับรอง
       </h1>
       <div className="flex w-full items-center justify-center gap-2">
-        <Dropdown
-          placeholder="เลือกอำเภอ"
-          value={selectAumpure}
-          onChange={(e: DropdownChangeEvent) => {
-            setselectAumpure(e.value);
-            setSelectTambon(null);
-          }}
-          options={amphures.data}
-          optionLabel="name_th"
-          className="w-60"
-          loading={amphures.isLoading}
-          showClear
-        />
+        {user.role === "admin" && (
+          <Dropdown
+            placeholder="เลือกอำเภอ"
+            value={selectAumpure}
+            onChange={(e: DropdownChangeEvent) => {
+              setselectAumpure(e.value);
+              setSelectTambon(null);
+            }}
+            options={amphures.data}
+            optionLabel="name_th"
+            className="w-60"
+            loading={amphures.isLoading}
+            showClear
+          />
+        )}
         {tambons.data && (
           <Dropdown
             placeholder="เลือกตำบล"
