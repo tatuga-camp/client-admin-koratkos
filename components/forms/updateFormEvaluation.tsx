@@ -2,7 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import { FaFileArrowDown, FaSquarePhone } from "react-icons/fa6";
 import { GrFormView } from "react-icons/gr";
-import { FormEvaluation, StatusEvaluation } from "../../model";
+import {
+  FileOnListFormEvaluation,
+  FormEvaluation,
+  StatusEvaluation,
+} from "../../model";
 
 import moment from "moment";
 import { useRouter } from "next/router";
@@ -17,13 +21,15 @@ import {
   TextField,
 } from "react-aria-components";
 import { BsFileEarmarkCode } from "react-icons/bs";
-import { IoIosCheckbox, IoIosCheckboxOutline } from "react-icons/io";
-import { MdDelete, MdEmail } from "react-icons/md";
+import { IoIosCheckbox, IoIosCheckboxOutline, IoMdClose } from "react-icons/io";
+import { MdDelete, MdEmail, MdFileOpen, MdUpload } from "react-icons/md";
 import Swal from "sweetalert2";
 import {
   CreateFileOnEvaulationService,
+  CreateFileOnListFormEvaluationService,
   CreateListFormEvaluationService,
   DeleteFileOnEvaluationService,
+  DeleteFileOnListEvaluationService,
   GetFormEvaluationService,
   UpdateFormEvaluationService,
   UpdateListFormEvaluationService,
@@ -33,6 +39,7 @@ import {
   UploadSignURLService,
 } from "../../services/google-storage";
 import { GetUserService } from "../../services/user";
+import Image from "next/image";
 
 type UpdateFormEvaluationProps = {
   selectFormEvaluation: FormEvaluation;
@@ -63,6 +70,8 @@ function UpdateFormEvaluation({
         id?: string;
         status: StatusEvaluation;
         suggestion?: string;
+        files?: File[];
+        fileOnListFormEvaluations?: FileOnListFormEvaluation[];
       };
     }[]
   >();
@@ -200,6 +209,26 @@ function UpdateFormEvaluation({
 
       const createPromises = evaluationListData?.map(async (list) => {
         if (list.listFormEvaluation.id) {
+          for (const file of list.listFormEvaluation.files ?? []) {
+            const getSignURL = await GetSignURLService({
+              fileName: file.name as string,
+              fileType: file.type as string,
+              farmerId: selectFormEvaluation.farmerId as string,
+            });
+
+            await UploadSignURLService({
+              contentType: file.type as string,
+              file: file as File,
+              signURL: getSignURL.signURL,
+            });
+
+            await CreateFileOnListFormEvaluationService({
+              type: file.type as string,
+              url: getSignURL.originalURL,
+              listFormEvaluationId: list.listFormEvaluation.id,
+              farmerId: selectFormEvaluation.farmerId as string,
+            });
+          }
           return UpdateListFormEvaluationService({
             query: {
               listFormEvaluationId: list.listFormEvaluation.id as string,
@@ -210,7 +239,7 @@ function UpdateFormEvaluation({
             },
           });
         } else if (!list.listFormEvaluation.id) {
-          return CreateListFormEvaluationService({
+          const create = await CreateListFormEvaluationService({
             status: list.listFormEvaluation.status,
             formEvaluationId: selectFormEvaluation.id as string,
             farmerId: router.query.farmerId as string,
@@ -218,6 +247,29 @@ function UpdateFormEvaluation({
             evalTopicKos06Id: list.evalTopicKos06Id as string,
             suggestion: list.listFormEvaluation.suggestion as string,
           });
+
+          for (const file of list.listFormEvaluation.files ?? []) {
+            const getSignURL = await GetSignURLService({
+              fileName: file.name as string,
+              fileType: file.type as string,
+              farmerId: selectFormEvaluation.farmerId as string,
+            });
+
+            await UploadSignURLService({
+              contentType: file.type as string,
+              file: file as File,
+              signURL: getSignURL.signURL,
+            });
+
+            await CreateFileOnListFormEvaluationService({
+              type: file.type as string,
+              url: getSignURL.originalURL,
+              listFormEvaluationId: create.id,
+              farmerId: selectFormEvaluation.farmerId as string,
+            });
+          }
+
+          return create;
         }
       });
       if (createPromises) {
@@ -278,6 +330,55 @@ function UpdateFormEvaluation({
       });
     }
   };
+
+  const handleRemoveFile = (indexRemove: number, id: string) => {
+    setEvaluationListData((prev) => {
+      return prev?.map((list) => {
+        if (list.id === id) {
+          return {
+            ...list,
+            listFormEvaluation: {
+              ...list.listFormEvaluation,
+              files: list.listFormEvaluation.files?.filter(
+                (_, i) => i !== indexRemove,
+              ),
+            },
+          };
+        }
+
+        return list;
+      });
+    });
+  };
+
+  const handleRemoveFileOnListEvaluation = async (
+    id: string,
+    listId: string,
+  ) => {
+    setEvaluationListData((prev) => {
+      return prev?.map((list) => {
+        if (list.id === listId) {
+          return {
+            ...list,
+            listFormEvaluation: {
+              ...list.listFormEvaluation,
+              fileOnListFormEvaluations:
+                list.listFormEvaluation.fileOnListFormEvaluations?.filter(
+                  (file) => file.id !== id,
+                ),
+            },
+          };
+        }
+
+        return list;
+      });
+    });
+
+    await DeleteFileOnListEvaluationService({
+      fileOnListFormEvaluationId: id,
+    });
+  };
+
   return (
     <Form
       onSubmit={handleSummitEvaluation}
@@ -322,6 +423,9 @@ function UpdateFormEvaluation({
                     {topic.order} {topic.title}
                   </div>
                   {topic.childs.map((child, index) => {
+                    const list = evaluationListData?.find(
+                      (item) => item.id === child.id,
+                    );
                     return (
                       <RadioGroup
                         aria-label="evaluation"
@@ -344,11 +448,7 @@ function UpdateFormEvaluation({
                             });
                           });
                         }}
-                        value={
-                          evaluationListData?.find(
-                            (item) => item.id === child.id,
-                          )?.listFormEvaluation?.status
-                        }
+                        value={list?.listFormEvaluation?.status}
                         className="col-span-10 grid w-full grid-cols-10 gap-3"
                       >
                         <div className="col-span-6 rounded-lg bg-fourth-color p-5 font-medium text-black">
@@ -384,36 +484,160 @@ function UpdateFormEvaluation({
                             </div>
                           )}
                         </Radio>
-                        <TextField
-                          onChange={(e) => {
-                            setEvaluationListData((prev) => {
-                              return prev?.map((item) => {
-                                if (item.id === child.id) {
-                                  return {
-                                    ...item,
-                                    listFormEvaluation: {
-                                      ...item.listFormEvaluation,
-                                      suggestion: e,
-                                    },
-                                  };
+                        <div className="col-span-2 flex flex-col gap-2">
+                          <label form="dropzone-file">
+                            <div
+                              className="flex w-full items-center justify-center gap-2
+                               rounded-lg bg-main-color px-4 py-1 text-sm 
+          font-semibold text-white hover:bg-super-main-color"
+                            >
+                              <MdUpload />
+                              Click to upload
+                            </div>
+                            <input
+                              onChange={(e) => {
+                                const files = e.target.files;
+
+                                if (files) {
+                                  const fileArray = Array.from(files);
+                                  setEvaluationListData((prev) => {
+                                    return prev?.map((item) => {
+                                      if (item.id === child.id) {
+                                        return {
+                                          ...item,
+                                          listFormEvaluation: {
+                                            ...item.listFormEvaluation,
+                                            files: [
+                                              ...(item.listFormEvaluation
+                                                .files ?? []),
+                                              ...fileArray,
+                                            ],
+                                          },
+                                        };
+                                      }
+                                      return item;
+                                    });
+                                  });
                                 }
-                                return item;
+                              }}
+                              multiple
+                              id="dropzone-file"
+                              type="file"
+                              className="hidden"
+                            />
+                          </label>
+                          <TextField
+                            onChange={(e) => {
+                              setEvaluationListData((prev) => {
+                                return prev?.map((item) => {
+                                  if (item.id === child.id) {
+                                    return {
+                                      ...item,
+                                      listFormEvaluation: {
+                                        ...item.listFormEvaluation,
+                                        suggestion: e,
+                                      },
+                                    };
+                                  }
+                                  return item;
+                                });
                               });
-                            });
-                          }}
-                          value={
-                            evaluationListData?.find(
-                              (item) => item.id === child.id,
-                            )?.listFormEvaluation?.suggestion
-                          }
-                          aria-label="note"
-                          className="col-span-2 flex items-center justify-center rounded-lg bg-fourth-color p-1 text-sm text-black"
-                        >
-                          <TextArea
-                            placeholder="....ข้อเสนอแนะ"
-                            className="h-full max-h-full min-h-full w-full min-w-full max-w-full resize-none border-0 p-2 outline-none"
-                          />
-                        </TextField>
+                            }}
+                            value={
+                              evaluationListData?.find(
+                                (item) => item.id === child.id,
+                              )?.listFormEvaluation?.suggestion
+                            }
+                            aria-label="note"
+                            className=" flex grow items-center justify-center rounded-lg
+                             bg-fourth-color p-1 text-sm text-black"
+                          >
+                            <TextArea
+                              placeholder="....ข้อเสนอแนะ"
+                              className="h-full max-h-full min-h-full w-full min-w-full max-w-full resize-none border-0 p-2 outline-none"
+                            />
+                          </TextField>
+                        </div>
+                        <div className="col-span-10 flex w-full flex-wrap  gap-2">
+                          {[
+                            ...(list?.listFormEvaluation.files ?? []),
+                            ...(list?.listFormEvaluation
+                              .fileOnListFormEvaluations ?? []),
+                          ].map((file, index) => {
+                            if (!list) {
+                              return;
+                            }
+                            const fileToProcess = "file" in file ? file : file; // This line might be needed if item itself could be a File
+                            if (!(fileToProcess instanceof File)) {
+                              const name =
+                                fileToProcess.url.split("/")[
+                                  fileToProcess.url.split("/").length - 1
+                                ];
+                              return (
+                                <li
+                                  key={index}
+                                  className="flex w-max items-center justify-between gap-3 rounded-lg border bg-super-main-color  p-1 pl-3"
+                                >
+                                  <a
+                                    href={fileToProcess.url}
+                                    target="_blank"
+                                    className="flex items-center justify-center gap-2 text-white"
+                                  >
+                                    <MdFileOpen className="mr-3" />
+                                    <section className="flex flex-col gap-0">
+                                      <div className="max-w-96 truncate text-sm">
+                                        {name} {/* Access directly */}
+                                      </div>
+                                    </section>
+                                  </a>
+                                  <button
+                                    onClick={() =>
+                                      handleRemoveFileOnListEvaluation(
+                                        fileToProcess.id,
+                                        list.id,
+                                      )
+                                    }
+                                    type="button"
+                                    className="flex h-6 w-6 items-center justify-center rounded text-sm font-semibold hover:bg-gray-300/50"
+                                  >
+                                    <IoMdClose />
+                                  </button>
+                                </li>
+                              );
+                            }
+                            const url = URL.createObjectURL(fileToProcess);
+
+                            return (
+                              <li
+                                key={index}
+                                className="flex w-max items-center justify-between gap-3 rounded-lg border bg-super-main-color  p-1 pl-3"
+                              >
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  className="flex items-center justify-center gap-2 text-white"
+                                >
+                                  <MdFileOpen className="mr-3" />
+                                  <section className="flex flex-col gap-0">
+                                    <div className="max-w-96 truncate text-sm">
+                                      {fileToProcess.name}{" "}
+                                      {/* Access directly */}
+                                    </div>
+                                  </section>
+                                </a>
+                                <button
+                                  onClick={() =>
+                                    handleRemoveFile(index, list?.id)
+                                  }
+                                  type="button"
+                                  className="flex h-6 w-6 items-center justify-center rounded text-sm font-semibold hover:bg-gray-300/50"
+                                >
+                                  <IoMdClose />
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </div>
                       </RadioGroup>
                     );
                   })}

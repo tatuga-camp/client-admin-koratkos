@@ -68,3 +68,12 @@ export type FileOnKos06 = {
   kos06Id: string;
   userId: string;
 };
+
+export type FileOnListFormEvaluation = {
+  id: string;
+  createAt: Date;
+  updateAt: Date;
+  url: string;
+  type: string;
+  listFormEvaluationId: string;
+};

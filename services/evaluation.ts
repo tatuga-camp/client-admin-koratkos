@@ -4,6 +4,7 @@ import {
   ChildEvalTopicKos06,
   EvalTopicKos06,
   FileOnKos06,
+  FileOnListFormEvaluation,
   FormEvaluation,
   ListFormEvaluation,
   StatusEvaluation,
@@ -115,11 +116,18 @@ type RequestGetFormEvaluationService = {
   formEvaluationId: string;
 };
 export type ResponseGetFormEvaluationService = {
-  formEvaluation: FormEvaluation & { user: User; files: FileOnKos06[] };
+  formEvaluation: FormEvaluation & {
+    user: User;
+    files: FileOnKos06[];
+  };
 } & {
   topics: (EvalTopicKos06 & {
     childs: (ChildEvalTopicKos06 & {
-      listFormEvaluation: ListFormEvaluation | null;
+      listFormEvaluation:
+        | (ListFormEvaluation & {
+            fileOnListFormEvaluations: FileOnListFormEvaluation[];
+          })
+        | null;
     })[];
   })[];
 };
@@ -214,6 +222,38 @@ export async function UpdateListFormEvaluationService(
   }
 }
 
+type RequestCreateFileOnListFormEvaluationService = {
+  listFormEvaluationId: string;
+  farmerId: string;
+  type: string;
+  url: string;
+};
+export type ResponseCreateFileOnListFormEvaluationService =
+  FileOnListFormEvaluation;
+export async function CreateFileOnListFormEvaluationService(
+  input: RequestCreateFileOnListFormEvaluationService,
+): Promise<ResponseCreateFileOnListFormEvaluationService> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+    const fileKos06 = await axios({
+      method: "POST",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/evaluation/create-fileOnListEvaluation`,
+      data: {
+        ...input,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return fileKos06.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
+
 type RequestCreateFileOnEvaulationService = {
   formEvaluationId: string;
   farmerId: string;
@@ -258,6 +298,34 @@ export async function DeleteFileOnEvaluationService(
     const fileKos06 = await axios({
       method: "DELETE",
       url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/evaluation/delete-fileFormEvaluation`,
+      params: {
+        ...input,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return fileKos06.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
+
+type RequestDeleteFileOnListEvaluationService = {
+  fileOnListFormEvaluationId: string;
+};
+export type ResponseDeleteFileOnListEvaluationService = { message: string };
+export async function DeleteFileOnListEvaluationService(
+  input: RequestDeleteFileOnListEvaluationService,
+): Promise<ResponseDeleteFileOnListEvaluationService> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+    const fileKos06 = await axios({
+      method: "DELETE",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/evaluation/delete-fileOnListFormEvaluation`,
       params: {
         ...input,
       },
