@@ -31,7 +31,8 @@ function Index({ userServer }: { userServer: User }) {
   const [registerFormsQuery, setRegisterFormsQuery] =
     useState<RequestGetAllReadyRegisterFormByPage>({
       page: 1,
-      limit: 20,
+      limit: 40,
+      status: null,
       orderBy: {
         summitEvaluationDate: "desc",
       },

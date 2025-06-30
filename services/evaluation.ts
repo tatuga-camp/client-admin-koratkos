@@ -69,6 +69,35 @@ export async function CrateFormEvaluationService(
   }
 }
 
+export type RequestUpdateCertificateRegisterFormService = {
+  certificate_status: StatusEvaluation;
+  farmerId: string;
+};
+export type ResponseUpdateCertificateRegisterFormService = FormEvaluation;
+export async function UpdateCertificateRegisterFormService(
+  input: RequestUpdateCertificateRegisterFormService,
+): Promise<ResponseUpdateCertificateRegisterFormService> {
+  try {
+    const cookies = parseCookies();
+    const access_token = cookies.access_token;
+    const formEvaluation = await axios({
+      method: "PATCH",
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/user/evaluation/update/certificate_status`,
+      data: {
+        ...input,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    return formEvaluation.data;
+  } catch (error: any) {
+    console.error(error.response.data);
+    throw error?.response?.data;
+  }
+}
+
 type RequestUpdateFormEvaluationService = {
   query: {
     formEvaluationId: string;

@@ -11,7 +11,7 @@ import {
 export type RequestGetAllReadyRegisterFormByPage = {
   page: number;
   limit: number;
-  status?: StatusEvaluation | "all";
+  status?: StatusEvaluation | null;
   firstName?: string;
   amphure?: string;
   tambon?: string;

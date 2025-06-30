@@ -4,6 +4,8 @@ export type RegisterFormEvaluation = {
   updateAt: Date;
   isReadyToEvaluated: boolean;
   status: StatusEvaluation;
+  certificate_status?: StatusEvaluation;
+
   summitEvaluationDate?: Date;
   farmerId: string;
 };
