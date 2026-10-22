@@ -106,6 +106,7 @@ function Index({ userServer }: { userServer: User }) {
           </h1>
           <div className="flex w-full flex-wrap items-center gap-3">
             <SearchField
+              aria-label="ค้นหาด้วยชื่อจริง"
               value={registerFormsQuery.firstName}
               onChange={(e) => {
                 setRegisterFormsQuery((prev) => {
