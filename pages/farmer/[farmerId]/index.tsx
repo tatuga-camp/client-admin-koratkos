@@ -1,6 +1,7 @@
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { parseCookies } from "nookies";
-import React, { useRef, useState } from "react";
+import React, { ReactNode, useState } from "react";
+import { IconType } from "react-icons";
 import { GetUserService } from "../../../services/user";
 import { User } from "../../../model";
 import { MenuFarmerEvaluation } from "../../../data/menus";
@@ -21,15 +22,19 @@ import {
   GetFarmerKos05Service,
   GetFarmerService,
 } from "../../../services/farmer";
-import { PiCertificateFill } from "react-icons/pi";
 import { useRouter } from "next/router";
 import {
-  FaAddressCard,
-  FaFileDownload,
-  FaPhoneSquare,
-  FaRegEye,
-  FaRegEyeSlash,
-} from "react-icons/fa";
+  LuArrowLeft,
+  LuAward,
+  LuCalendar,
+  LuCreditCard,
+  LuEye,
+  LuEyeOff,
+  LuFileDown,
+  LuInbox,
+  LuPhone,
+  LuTrash2,
+} from "react-icons/lu";
 import moment from "moment";
 import Image from "next/image";
 import Head from "next/head";
@@ -37,12 +42,35 @@ import DashboardLayout from "../../../layouts/dashboardLayout";
 import Swal from "sweetalert2";
 import Link from "next/link";
 import TableCertificate from "../../../components/tables/tableCertificate";
-import {
-  DeleteCertificateService,
-  GetAllCertificateService,
-} from "../../../services/certificate";
+import { GetAllCertificateService } from "../../../services/certificate";
 import CreateCertificate from "../../../components/forms/createCertificate";
-import { MdDelete } from "react-icons/md";
+import StatusBadge from "../../../components/ui/StatusBadge";
+
+function MetaItem({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: IconType;
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 items-start gap-3">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-third-color/60 text-super-main-color">
+        <Icon aria-hidden="true" className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <dt className="text-xs font-medium text-super-main-color/70">
+          {label}
+        </dt>
+        <dd className="flex min-h-5 items-center gap-1 break-words text-sm font-semibold">
+          {children}
+        </dd>
+      </div>
+    </div>
+  );
+}
 
 function Index({ userServer }: { userServer: User }) {
   const [selectMenu, setSelectMenu] = useState<number>(0);
@@ -110,6 +138,9 @@ function Index({ userServer }: { userServer: User }) {
       footer:
         "<strong>หากลบแล้วคุณจะไม่สามารถกู้คืนข้อมูลได้ และ ข้อมูลทุกอย่างที่เกี่ยวข้องกับเกษตรกรท่านนี้จะถูกลบทั้งหมด</strong>",
       showCancelButton: true,
+      confirmButtonText: "ลบเกษตรกร",
+      cancelButtonText: "ยกเลิก",
+      confirmButtonColor: "#dc2626",
       inputValidator: (value) => {
         if (value !== replacedText) {
           return "กรุณาพิมพ์ข้อความยืนยันให้ถูกต้อง";
@@ -132,10 +163,38 @@ function Index({ userServer }: { userServer: User }) {
       }
     }
   };
+
+  const kosDocuments = [kos01, kos02, kos03, kos04, kos05];
+  const selectedDocument = kosDocuments[selectMenu];
+  const selectedMenu = MenuFarmerEvaluation[selectMenu];
+
+  const handleTabKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const last = MenuFarmerEvaluation.length - 1;
+    const nextIndex: Record<string, number> = {
+      ArrowRight: selectMenu === last ? 0 : selectMenu + 1,
+      ArrowLeft: selectMenu === 0 ? last : selectMenu - 1,
+      Home: 0,
+      End: last,
+    };
+    const next = nextIndex[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    setSelectMenu(next);
+    document.getElementById(`kos-tab-${next}`)?.focus();
+  };
+
+  const fullName = farmer.data
+    ? `${farmer.data.title ?? ""} ${farmer.data.firstName} ${farmer.data.lastName}`.trim()
+    : "";
+  const identityCardId = farmer.data?.identityCardId;
+  const submittedDate = farmer.data?.register?.summitEvaluationDate;
+
   return (
     <DashboardLayout user={userServer}>
       <Head>
-        <title>เกษตรกร</title>
+        <title>
+          {fullName ? `${fullName} | Korat KOS` : "เกษตรกร | Korat KOS"}
+        </title>
       </Head>
       {triggerCreateCertificate && (
         <CreateCertificate
@@ -143,173 +202,288 @@ function Index({ userServer }: { userServer: User }) {
           setTriggerCreateCertificate={setTriggerCreateCertificate}
         />
       )}
-      <div className="mt-10 flex w-full flex-col items-center justify-start gap-5">
-        <header className="flex w-full flex-col items-center gap-5">
-          <div className="flex h-max w-11/12 justify-between rounded-lg bg-fourth-color p-5">
-            <div className="flex w-max flex-col items-start justify-center">
-              <h1 className="text-2xl font-semibold text-super-main-color">
-                ผู้รับการประเมิน :
-              </h1>
-              {farmer.isLoading ? (
-                <div className="h-5 w-40 animate-pulse rounded-lg bg-gray-200"></div>
-              ) : (
-                <h2 className="text-2xl font-bold text-super-main-color">
-                  {farmer.data?.title} {farmer.data?.firstName}{" "}
-                  {farmer.data?.lastName}
-                </h2>
-              )}
+      <div className="flex flex-col gap-6">
+        <div>
+          <Link
+            href="/"
+            className="-mx-1 inline-flex min-h-10 items-center gap-1.5 rounded-lg px-1 text-sm font-medium text-super-main-color/80
+              hover:text-super-main-color focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-main-color"
+          >
+            <LuArrowLeft aria-hidden="true" className="size-4" />
+            กลับไปหน้ารายการคำขอ
+          </Link>
+        </div>
 
-              <h4 className="flex w-full items-center justify-start gap-2 text-fifth-color">
-                <FaPhoneSquare />
-                <span className="text-base font-semibold">เบอร์โทร</span>
-                {farmer.isLoading ? (
-                  <div className="h-5 w-20 animate-pulse rounded-lg bg-gray-100"></div>
-                ) : (
-                  <span>{farmer.data?.phoneNumber}</span>
-                )}
-              </h4>
-              <h4 className="flex w-full items-center justify-start gap-2 text-fifth-color">
-                <FaAddressCard />
-
-                <span className="text-base font-semibold">
-                  หมายเลขบัตรประชาชน
+        {farmer.isError ? (
+          <section className="card flex flex-col items-center gap-3 px-4 py-12 text-center">
+            <p className="font-semibold">โหลดข้อมูลเกษตรกรไม่สำเร็จ</p>
+            <button
+              type="button"
+              onClick={() => farmer.refetch()}
+              className="btn btn-secondary"
+            >
+              ลองอีกครั้ง
+            </button>
+          </section>
+        ) : (
+          <section className="card" aria-busy={farmer.isLoading}>
+            <div className="flex flex-col gap-5 p-4 sm:p-6 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex min-w-0 items-center gap-4">
+                <span className="relative size-16 shrink-0 overflow-hidden rounded-full bg-third-color ring-2 ring-white sm:size-20">
+                  {farmer.isLoading ? (
+                    <span className="block size-full animate-pulse bg-third-color" />
+                  ) : (
+                    farmer.data?.picture && (
+                      <Image
+                        src={farmer.data.picture}
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                        alt=""
+                      />
+                    )
+                  )}
                 </span>
-                {farmer.isLoading ? (
-                  <div className="flex items-center justify-start gap-2">
-                    <div className="h-5 w-5 animate-pulse rounded-full bg-gray-300"></div>
-                    <div className="h-5 w-20 animate-pulse rounded-lg bg-gray-100"></div>
-                  </div>
-                ) : (
-                  <span>
-                    {triggerShowIdCard
-                      ? farmer.data?.identityCardId
-                      : farmer.data?.identityCardId?.slice(0, -5) + "*****"}
-                  </span>
-                )}
-                {triggerShowIdCard ? (
-                  <FaRegEye
-                    onClick={() => setTriggerShowIdCard(() => false)}
-                    className="cursor-pointer rounded-full bg-white text-xl"
-                  />
-                ) : (
-                  <FaRegEyeSlash
-                    onClick={() => setTriggerShowIdCard(() => true)}
-                    className="cursor-pointer rounded-full bg-white text-xl"
-                  />
-                )}
-              </h4>
-              <div className="flex items-center  justify-center gap-2 ">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-super-main-color/80">
+                    ผู้รับการประเมิน
+                  </p>
+                  {farmer.isLoading ? (
+                    <div className="mt-1 flex flex-col gap-2">
+                      <div className="h-7 w-48 max-w-full animate-pulse rounded-md bg-third-color sm:w-64" />
+                      <div className="h-5 w-28 animate-pulse rounded-full bg-third-color/70" />
+                    </div>
+                  ) : (
+                    <>
+                      <h1 className="break-words text-xl font-bold leading-tight sm:text-2xl">
+                        {fullName}
+                      </h1>
+                      {farmer.data?.register && (
+                        <StatusBadge
+                          status={farmer.data.register.status}
+                          className="mt-2"
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap xl:shrink-0 xl:justify-end">
                 <Link
                   target="_blank"
                   href={`${router.query.farmerId}/report`}
-                  className="button-focus flex items-center justify-center gap-2 rounded-lg bg-fifth-color px-5 py-1 text-white"
+                  className="btn btn-secondary"
                 >
-                  ดาวโหลดเอกสาร <FaFileDownload />
+                  <LuFileDown aria-hidden="true" className="size-4" />
+                  ดาวน์โหลดเอกสาร
                 </Link>
                 {userServer.role === "admin" && (
                   <button
+                    type="button"
                     onClick={() => setTriggerCreateCertificate((prev) => !prev)}
-                    className="button-focus flex items-center justify-center gap-2 rounded-lg bg-super-main-color px-5 py-1 text-white"
+                    className="btn btn-dark"
                   >
-                    สร้างใบรับรอง KOS <PiCertificateFill />
+                    <LuAward aria-hidden="true" className="size-4" />
+                    สร้างใบรับรอง KOS
                   </button>
                 )}
                 <button
+                  type="button"
+                  disabled={!farmer.data}
                   onClick={() =>
                     handleDeleteFarmer({
                       farmerId: farmer.data?.id as string,
                       name: farmer.data?.firstName as string,
                     })
                   }
-                  className="flex items-center justify-center gap-2 rounded-lg bg-red-300
-                     px-3 py-1 text-red-700 drop-shadow-md transition duration-150 hover:scale-105"
+                  className="btn btn-danger-soft"
                 >
-                  <MdDelete /> ลบเกษตรกร
+                  <LuTrash2 aria-hidden="true" className="size-4" />
+                  ลบเกษตรกร
                 </button>
               </div>
             </div>
-            <div className="flex w-max flex-col items-end justify-center">
-              <div className="relative h-20 w-20 overflow-hidden rounded-full">
+
+            <dl className="grid gap-4 border-t border-third-color px-4 py-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
+              <MetaItem icon={LuPhone} label="เบอร์โทร">
                 {farmer.isLoading ? (
-                  <div className="h-full w-full animate-pulse bg-gray-500"></div>
+                  <span className="block h-4 w-24 animate-pulse rounded bg-third-color" />
                 ) : (
-                  <Image
-                    src={farmer.data?.picture as string}
-                    fill
-                    className="object-cover"
-                    alt="profile"
-                  />
+                  <span className="tabular-nums">
+                    {farmer.data?.phoneNumber || "-"}
+                  </span>
                 )}
-              </div>
-              <h1 className="text-sm font-semibold text-super-main-color">
-                วันที่ส่งคำขอ :
-              </h1>
-              {farmer.isLoading ? (
-                <div className="h-5 w-20 animate-pulse rounded-lg bg-gray-100"></div>
-              ) : (
-                <h2 className="text-sm font-bold text-super-main-color">
-                  {moment(farmer.data?.register?.summitEvaluationDate).format(
-                    "DD/MMMM/YYYY",
-                  )}
-                </h2>
-              )}
+              </MetaItem>
+              <MetaItem icon={LuCreditCard} label="หมายเลขบัตรประชาชน">
+                {farmer.isLoading ? (
+                  <span className="block h-4 w-32 animate-pulse rounded bg-third-color" />
+                ) : identityCardId ? (
+                  <>
+                    <span className="tabular-nums">
+                      {triggerShowIdCard
+                        ? identityCardId
+                        : identityCardId.slice(0, -5) + "*****"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setTriggerShowIdCard((prev) => !prev)}
+                      aria-pressed={triggerShowIdCard}
+                      aria-label={
+                        triggerShowIdCard
+                          ? "ซ่อนหมายเลขบัตรประชาชน"
+                          : "แสดงหมายเลขบัตรประชาชน"
+                      }
+                      className="btn btn-ghost btn-icon -my-2.5"
+                    >
+                      {triggerShowIdCard ? (
+                        <LuEyeOff aria-hidden="true" className="size-4" />
+                      ) : (
+                        <LuEye aria-hidden="true" className="size-4" />
+                      )}
+                    </button>
+                  </>
+                ) : (
+                  "-"
+                )}
+              </MetaItem>
+              <MetaItem icon={LuCalendar} label="วันที่ส่งคำขอ">
+                {farmer.isLoading ? (
+                  <span className="block h-4 w-24 animate-pulse rounded bg-third-color" />
+                ) : submittedDate ? (
+                  moment(submittedDate).locale("th").format("D MMM YYYY")
+                ) : (
+                  "-"
+                )}
+              </MetaItem>
+            </dl>
+          </section>
+        )}
+
+        {certificates.isLoading ? (
+          <div className="card" aria-hidden="true">
+            <div className="card-header">
+              <div className="h-6 w-32 animate-pulse rounded-md bg-third-color" />
+            </div>
+            <div className="flex flex-col gap-3 p-4 sm:p-5">
+              <div className="h-5 w-full animate-pulse rounded bg-third-color/70" />
+              <div className="h-5 w-2/3 animate-pulse rounded bg-third-color/70" />
             </div>
           </div>
+        ) : (
+          certificates.data &&
+          certificates.data?.length > 0 && (
+            <TableCertificate certificates={certificates} user={userServer} />
+          )
+        )}
 
-          {certificates.isLoading ? (
-            <div className="h-40 w-11/12 animate-pulse rounded-lg bg-gray-400"></div>
-          ) : (
-            certificates.data &&
-            certificates.data?.length > 0 && (
-              <TableCertificate certificates={certificates} user={userServer} />
-            )
-          )}
-
-          {farmer.data?.register && (
-            <nav className="grid h-40 w-11/12 grid-cols-6 place-items-center gap-3">
-              {MenuFarmerEvaluation.map((menu, index) => {
-                return (
-                  <MenuCardEvaluationFarmer
-                    selectMenu={selectMenu}
-                    setSelectMenu={setSelectMenu}
-                    index={index}
-                    card={menu}
-                    key={index}
-                  />
-                );
-              })}
-            </nav>
-          )}
-        </header>
-
-        {farmer.data?.register ? (
-          <main className="w-full">
-            {kos01.isLoading ? (
-              <div className=" grid h-96 w-11/12 animate-pulse grid-cols-3 gap-5 rounded-lg bg-gray-50 p-5">
-                {[...new Array(5)].map((_, index) => {
+        {farmer.isLoading ? (
+          <div className="flex flex-col gap-4" aria-hidden="true">
+            <div className="card flex gap-1.5 overflow-hidden p-1.5">
+              {MenuFarmerEvaluation.map((menu) => (
+                <div
+                  key={menu.title}
+                  className="h-14 min-w-36 flex-1 animate-pulse rounded-lg bg-third-color/60"
+                />
+              ))}
+            </div>
+            <div className="card h-80 animate-pulse bg-third-color/40" />
+          </div>
+        ) : farmer.data?.register ? (
+          <div className="flex flex-col gap-4">
+            <div className="card bg-third-color/30">
+              <div
+                role="tablist"
+                aria-label="เอกสาร KOS"
+                onKeyDown={handleTabKeyDown}
+                className="flex snap-x scroll-px-1.5 gap-1.5 overflow-x-auto p-1.5"
+              >
+                {MenuFarmerEvaluation.map((menu, index) => {
                   return (
-                    <div
-                      className="h-full w-full animate-pulse rounded-lg bg-slate-200"
+                    <MenuCardEvaluationFarmer
+                      selectMenu={selectMenu}
+                      setSelectMenu={setSelectMenu}
+                      index={index}
+                      card={menu}
                       key={index}
-                    ></div>
+                    />
                   );
                 })}
               </div>
-            ) : (
-              <div className="flex w-full items-center justify-center">
-                {selectMenu === 0 && <Kos01Form kos01={kos01} />}
-                {selectMenu === 1 && <Kos02Form kos02={kos02} />}
-                {selectMenu === 2 && <Kos03Form kos03={kos03} />}
-                {selectMenu === 3 && <Kos04Form kos04={kos04} />}
-                {selectMenu === 4 && <Kos05Form kos05={kos05} />}
-                {selectMenu === 5 && <Kos06Form />}
+            </div>
+
+            {selectMenu === 5 ? (
+              // KOS-06 lays out its own cards, so it is not wrapped in one.
+              <div
+                role="tabpanel"
+                id="kos-tabpanel"
+                aria-labelledby={`kos-tab-${selectMenu}`}
+                className="min-w-0"
+              >
+                <Kos06Form />
               </div>
+            ) : (
+              <section
+                role="tabpanel"
+                id="kos-tabpanel"
+                aria-labelledby={`kos-tab-${selectMenu}`}
+                className="card min-w-0"
+              >
+                <div className="card-header">
+                  <div className="min-w-0">
+                    <h2 className="card-title">{selectedMenu.title}</h2>
+                    <p className="text-sm text-super-main-color/80">
+                      {selectedMenu.description}
+                    </p>
+                  </div>
+                </div>
+                <div className="p-4 sm:p-5">
+                  {selectedDocument?.isLoading ? (
+                    <div
+                      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                      aria-busy="true"
+                    >
+                      {[...new Array(6)].map((_, index) => (
+                        <div key={index} className="flex flex-col gap-2">
+                          <div className="h-3 w-24 animate-pulse rounded bg-third-color/70" />
+                          <div className="h-5 w-full animate-pulse rounded bg-third-color" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : selectedDocument?.isError ? (
+                    <div className="flex flex-col items-center gap-3 py-10 text-center">
+                      <p className="font-semibold">โหลดเอกสารไม่สำเร็จ</p>
+                      <button
+                        type="button"
+                        onClick={() => selectedDocument.refetch()}
+                        className="btn btn-secondary"
+                      >
+                        ลองอีกครั้ง
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      {selectMenu === 0 && <Kos01Form kos01={kos01} />}
+                      {selectMenu === 1 && <Kos02Form kos02={kos02} />}
+                      {selectMenu === 2 && <Kos03Form kos03={kos03} />}
+                      {selectMenu === 3 && <Kos04Form kos04={kos04} />}
+                      {selectMenu === 4 && <Kos05Form kos05={kos05} />}
+                    </>
+                  )}
+                </div>
+              </section>
             )}
-          </main>
+          </div>
         ) : (
-          <main className="text-lg font-semibold">
-            เกษตรกรยังไม่ได้ส่งคำขอประเมิน
-          </main>
+          farmer.data && (
+            <section className="card flex flex-col items-center gap-2 px-4 py-12 text-center">
+              <LuInbox
+                aria-hidden="true"
+                className="size-10 text-fifth-color"
+              />
+              <p className="font-semibold">เกษตรกรยังไม่ได้ส่งคำขอประเมิน</p>
+            </section>
+          )
         )}
       </div>
     </DashboardLayout>

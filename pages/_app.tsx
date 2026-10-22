@@ -1,13 +1,20 @@
 import "@/styles/globals.css";
-import "primereact/resources/themes/lara-light-cyan/theme.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
-import { PrimeReactProvider, addLocale } from "primereact/api";
 import NextTopLoader from "nextjs-toploader";
 import "moment/locale/th";
 import type { AppProps } from "next/app";
-import { useRouter } from "next/router";
+import { Anuphan } from "next/font/google";
+
+// Self-hosted at build time; exposed as a CSS variable on :root so overlays
+// rendered outside the React tree (SweetAlert2, dialogs) get it too.
+const anuphan = Anuphan({
+  subsets: ["thai", "latin"],
+  display: "swap",
+  // next/font has no fallback metrics for Anuphan; skip the adjustment instead of warning.
+  adjustFontFallback: false,
+});
 
 export default function App({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(
@@ -21,62 +28,17 @@ export default function App({ Component, pageProps }: AppProps) {
         },
       }),
   );
-  addLocale("th", {
-    firstDayOfWeek: 1,
-    dayNames: [
-      "อาทิตย์",
-      "จันทร์",
-      "อังคาร",
-      "พุธ",
-      "พฤหัสบดี",
-      "ศุกร์",
-      "เสาร์",
-    ],
-    dayNamesShort: ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."],
-    dayNamesMin: ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"],
-    monthNames: [
-      "มกราคม",
-      "กุมภาพันธ์",
-      "มีนาคม",
-      "เมษายน",
-      "พฤษภาคม",
-      "มิถุนายน",
-      "กรกฎาคม",
-      "สิงหาคม",
-      "กันยายน",
-      "ตุลาคม",
-      "พฤศจิกายน",
-      "ธันวาคม",
-    ],
-    monthNamesShort: [
-      "ม.ค.",
-      "ก.พ.",
-      "มี.ค.",
-      "เม.ย.",
-      "พ.ค.",
-      "มิ.ย.",
-      "ก.ค.",
-      "ส.ค.",
-      "ก.ย.",
-      "ต.ค.",
-      "พ.ย.",
-      "ธ.ค.",
-    ],
-    today: "วันนี้",
-    clear: "ล้าง",
-  });
-
-  const router = useRouter();
-  const pageAuth = ["/auth/sign-up", "/auth/sign-in", "/auth/forget-password"];
-  const useLayout = pageAuth.includes(router.pathname);
 
   return (
     <QueryClientProvider client={queryClient}>
+      <style jsx global>{`
+        :root {
+          --font-anuphan: ${anuphan.style.fontFamily};
+        }
+      `}</style>
       <ReactQueryDevtools initialIsOpen={false} />
-      <PrimeReactProvider>
-        <NextTopLoader color="#5C430D" showSpinner={false} />
-        <Component {...pageProps} />
-      </PrimeReactProvider>
+      <NextTopLoader color="#597E52" showSpinner={false} />
+      <Component {...pageProps} />
     </QueryClientProvider>
   );
 }

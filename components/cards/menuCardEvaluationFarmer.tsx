@@ -1,5 +1,6 @@
 import React from "react";
 import { IconType } from "react-icons/lib";
+import { LuClipboardCheck } from "react-icons/lu";
 
 type MenuCardEvaluationFarmerProps = {
   card: {
@@ -12,32 +13,45 @@ type MenuCardEvaluationFarmerProps = {
   selectMenu: number;
   setSelectMenu: React.Dispatch<React.SetStateAction<number>>;
 };
+
+/**
+ * One tab of the KOS-01…KOS-06 document switcher. The parent renders the
+ * `role="tablist"` container and the single `#kos-tabpanel`.
+ */
 function MenuCardEvaluationFarmer({
   card,
   index,
   selectMenu,
   setSelectMenu,
 }: MenuCardEvaluationFarmerProps) {
+  const selected = selectMenu === index;
+  const isEvaluation = card.title === "KOS-06";
+
   return (
-    <div
+    <button
+      type="button"
+      role="tab"
+      id={`kos-tab-${index}`}
+      aria-selected={selected}
+      aria-controls="kos-tabpanel"
+      tabIndex={selected ? 0 : -1}
       onClick={() => setSelectMenu(() => index)}
-      className={`group hover:bg-fifth-color ${selectMenu === index ? "bg-fifth-color" : "bg-fourth-color "} flex h-full w-full cursor-pointer
-       flex-col  items-center justify-around gap-2 rounded-lg p-4 font-Anuphan`}
+      className={`relative flex min-w-36 flex-1 basis-0 snap-start flex-col items-start gap-0.5 rounded-lg px-3 py-2.5 text-left transition
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-main-color
+        ${
+          selected
+            ? "bg-white text-super-main-color shadow-sm ring-1 ring-third-color after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-main-color"
+            : "text-super-main-color/80 hover:bg-white/70 hover:text-super-main-color"
+        }`}
     >
-      <h1 className="text-lg font-semibold text-super-main-color group-hover:text-white xl:text-2xl">
+      <span className="flex items-center gap-1.5 text-sm font-semibold">
         {card.title}
-      </h1>
-      <p className="line-clamp-2 text-balance text-center text-[0.7rem] xl:text-xs">
-        {card.description}
-      </p>
-      <button
-        className={`${card.title === "KOS-06" ? "bg-secondary-color" : "bg-fifth-color"} flex items-center  justify-center 
-      gap-1 rounded-lg px-5 py-1 text-xs font-semibold ${selectMenu === index ? "bg-fourth-color text-black" : "text-white"}  group-hover:bg-fourth-color group-hover:text-black`}
-      >
-        {card.icon && <card.icon className="hidden xl:block" />}
-        {card.button}
-      </button>
-    </div>
+        {isEvaluation && (
+          <LuClipboardCheck aria-hidden="true" className="size-4 text-main-color" />
+        )}
+      </span>
+      <span className="line-clamp-1 w-full text-xs">{card.description}</span>
+    </button>
   );
 }
 

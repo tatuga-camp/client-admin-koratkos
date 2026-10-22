@@ -5,9 +5,8 @@ import {
   ResponseGetAllCertificateService,
 } from "../../services/certificate";
 import moment from "moment";
-import { PiCertificateBold } from "react-icons/pi";
 import Link from "next/link";
-import { MdDelete } from "react-icons/md";
+import { LuAward, LuTrash2 } from "react-icons/lu";
 import { User } from "../../model";
 import Swal from "sweetalert2";
 
@@ -15,6 +14,10 @@ type TableCertificateProps = {
   certificates: UseQueryResult<ResponseGetAllCertificateService, Error>;
   user: User;
 };
+
+const formatDate = (date?: string) =>
+  date ? moment(date).locale("th").format("D MMM YYYY") : "-";
+
 function TableCertificate({ certificates, user }: TableCertificateProps) {
   const handleDeleteCertificate = async ({
     certificateId,
@@ -32,6 +35,9 @@ function TableCertificate({ certificates, user }: TableCertificateProps) {
       html: content,
       footer: "<strong>หากลบแล้วคุณจะไม่สามารถกู้คืนข้อมูลได้</strong>",
       showCancelButton: true,
+      confirmButtonText: "ลบใบรับรอง",
+      cancelButtonText: "ยกเลิก",
+      confirmButtonColor: "#dc2626",
       inputValidator: (value) => {
         if (value !== "ยืนยันการลบ") {
           return "กรุณาพิมพ์ข้อความยืนยันให้ถูกต้อง";
@@ -47,7 +53,7 @@ function TableCertificate({ certificates, user }: TableCertificateProps) {
             Swal.showLoading();
           },
         });
-        const deletePlant = await DeleteCertificateService({
+        await DeleteCertificateService({
           certificateId: certificateId,
         });
         await certificates.refetch();
@@ -66,63 +72,69 @@ function TableCertificate({ certificates, user }: TableCertificateProps) {
       }
     }
   };
+
+  const rows = certificates.data ?? [];
+  const certificateHref = (certificate: (typeof rows)[number]) =>
+    `/farmer/${certificate.farmerId}/certificate/${certificate.id}`;
+
   return (
-    <div className="w-[48rem] overflow-auto rounded-lg bg-fourth-color p-5 xl:w-10/12 2xl:w-11/12">
-      <h1 className="my-2 text-xl font-semibold text-super-main-color">
-        ใบรับรอง KOS
-      </h1>
-      <div className=" w-full overflow-auto p-5 ">
-        <table className="w-full table-auto border-collapse ">
-          <thead>
-            <tr className="sticky  top-0 border-2  border-super-main-color bg-fifth-color text-white">
-              <th className="h-10 border-2 border-super-main-color  px-2">
-                รหัสใบรับรอง
-              </th>
-              <th className="h-10 border-2 border-super-main-color px-2">
-                วันที่ออกใบรับรอง
-              </th>
-              <th className="h-10 border-2 border-super-main-color px-2">
-                วันที่หมดอายุ
-              </th>
-              <th className="h-10 border-2 border-super-main-color px-2">
-                ตัวเลือก
+    <section className="card">
+      <div className="card-header">
+        <h2 className="card-title">ใบรับรอง KOS</h2>
+        <span className="text-sm text-super-main-color/80">
+          {rows.length} ใบ
+        </span>
+      </div>
+
+      {/* Tablet and desktop */}
+      <div className="hidden overflow-x-auto md:block">
+        <table className="w-full min-w-[640px] text-left text-sm">
+          <thead className="border-b border-third-color bg-fourth-color/70 text-xs font-semibold text-super-main-color/80">
+            <tr>
+              <th scope="col" className="px-5 py-3">รหัสใบรับรอง</th>
+              <th scope="col" className="px-3 py-3">วันที่ออกใบรับรอง</th>
+              <th scope="col" className="px-3 py-3">วันที่หมดอายุ</th>
+              <th scope="col" className="px-5 py-3">
+                <span className="sr-only">ตัวเลือก</span>
               </th>
             </tr>
           </thead>
-          <tbody>
-            {certificates.data?.map((certificate, index) => {
+          <tbody className="divide-y divide-third-color">
+            {rows.map((certificate) => {
               return (
-                <tr key={index} className="h-10 text-left ">
-                  <td className="h-16 px-3">{certificate.certNumber}</td>
-                  <td className="px-3">
-                    {moment(certificate.certRequestDate).format("DD/MMMM/YYYY")}
+                <tr key={certificate.id} className="transition-colors hover:bg-fourth-color/60">
+                  <td className="px-5 py-3 font-semibold">{certificate.certNumber}</td>
+                  <td className="whitespace-nowrap px-3 py-3 tabular-nums">
+                    {formatDate(certificate.certRequestDate)}
                   </td>
-                  <td className=" px-3">
-                    {moment(certificate.certExpiredDate).format("DD/MMMM/YYYY")}
+                  <td className="whitespace-nowrap px-3 py-3 tabular-nums">
+                    {formatDate(certificate.certExpiredDate)}
                   </td>
-                  <td className="flex w-full items-center justify-center gap-3 py-2">
-                    <Link
-                      target="_blank"
-                      href={`/farmer/${certificate.farmerId}/certificate/${certificate.id}`}
-                      className="flex items-center justify-center gap-2 rounded-lg bg-green-300
-                     px-3 py-1 text-green-950 drop-shadow-md transition duration-150 hover:scale-105"
-                    >
-                      <PiCertificateBold />
-                      ดูใบรับรอง
-                    </Link>
-                    {user.role === "admin" && (
-                      <button
-                        onClick={() =>
-                          handleDeleteCertificate({
-                            certificateId: certificate.id,
-                          })
-                        }
-                        className="flex items-center justify-center gap-2 rounded-lg bg-red-300
-                     px-3 py-1 text-red-700 drop-shadow-md transition duration-150 hover:scale-105"
+                  <td className="px-5 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        target="_blank"
+                        href={certificateHref(certificate)}
+                        className="btn btn-secondary btn-sm"
                       >
-                        <MdDelete /> ลบใบรับรอง
-                      </button>
-                    )}
+                        <LuAward aria-hidden="true" className="size-4" />
+                        ดูใบรับรอง
+                      </Link>
+                      {user.role === "admin" && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleDeleteCertificate({
+                              certificateId: certificate.id,
+                            })
+                          }
+                          className="btn btn-danger-soft btn-sm"
+                        >
+                          <LuTrash2 aria-hidden="true" className="size-4" />
+                          ลบใบรับรอง
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -130,7 +142,51 @@ function TableCertificate({ certificates, user }: TableCertificateProps) {
           </tbody>
         </table>
       </div>
-    </div>
+
+      {/* Phones */}
+      <ul className="divide-y divide-third-color md:hidden">
+        {rows.map((certificate) => (
+          <li key={certificate.id} className="p-4">
+            <p className="text-xs text-super-main-color/70">รหัสใบรับรอง</p>
+            <p className="break-words font-semibold">{certificate.certNumber}</p>
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+              <div>
+                <dt className="text-super-main-color/70">วันที่ออกใบรับรอง</dt>
+                <dd className="font-medium">{formatDate(certificate.certRequestDate)}</dd>
+              </div>
+              <div>
+                <dt className="text-super-main-color/70">วันที่หมดอายุ</dt>
+                <dd className="font-medium">{formatDate(certificate.certExpiredDate)}</dd>
+              </div>
+            </dl>
+            <div className={`mt-3 grid gap-2 ${user.role === "admin" ? "grid-cols-2" : ""}`}>
+              <Link
+                target="_blank"
+                href={certificateHref(certificate)}
+                className="btn btn-secondary w-full"
+              >
+                <LuAward aria-hidden="true" className="size-4" />
+                ดูใบรับรอง
+              </Link>
+              {user.role === "admin" && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleDeleteCertificate({
+                      certificateId: certificate.id,
+                    })
+                  }
+                  className="btn btn-danger-soft w-full"
+                >
+                  <LuTrash2 aria-hidden="true" className="size-4" />
+                  ลบใบรับรอง
+                </button>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

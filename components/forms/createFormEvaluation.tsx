@@ -1,15 +1,15 @@
 import React, { useState } from "react";
-import { Button, Form, Label, TextField } from "react-aria-components";
+import { Button, Form } from "react-aria-components";
+import { LuClipboardList, LuPlayCircle } from "react-icons/lu";
 import { FormEvaluation } from "../../model";
-import { Calendar } from "primereact/calendar";
 import Swal from "sweetalert2";
+import DateInput from "../ui/DateInput";
 import {
   CrateFormEvaluationService,
   ResponseGetFormEvaluationsService,
 } from "../../services/evaluation";
 import { useRouter } from "next/router";
 import { UseQueryResult } from "@tanstack/react-query";
-import { Nullable } from "primereact/ts-helpers";
 
 type ConfirmStartEvalationProps = {
   selectFormEvaluation: FormEvaluation;
@@ -20,7 +20,7 @@ function CreateFormEvaluation({
   formEvaluations,
 }: ConfirmStartEvalationProps) {
   const router = useRouter();
-  const [date, setDate] = useState<Nullable<Date>>(new Date());
+  const [date, setDate] = useState<Date | null>(new Date());
   const handleSummitCreateFormEvaluation = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
@@ -57,33 +57,37 @@ function CreateFormEvaluation({
   return (
     <Form
       onSubmit={handleSummitCreateFormEvaluation}
-      className="h-max w-11/12 rounded-lg bg-fourth-color p-5"
+      className="flex flex-col gap-5 px-4 py-5 sm:px-5"
     >
-      <h1 className="text-2xl font-bold text-super-main-color">
-        แบบประเมินครั้งที่ : {selectFormEvaluation.number}
-      </h1>
-      <h2 className="text-xl font-bold text-super-main-color">
-        คุณต้องการเริ่มการประเมินหรือไม่
-      </h2>
-      <TextField className="flex w-full flex-col items-center justify-center">
-        <Label className="font-semibold text-super-main-color">
+      <div className="flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-main-color/10 text-main-color">
+          <LuClipboardList aria-hidden="true" className="size-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="font-semibold">
+            แบบประเมินครั้งที่ : {selectFormEvaluation.number}
+          </p>
+          <p className="text-sm text-super-main-color/80">
+            คุณต้องการเริ่มการประเมินหรือไม่
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5 sm:max-w-xs">
+        <label htmlFor="evaluation-start-date" className="label">
           วันที่เริ่มการประเมิน
-        </Label>
-        <Calendar
-          dateFormat="dd/MM/yy"
+        </label>
+        <DateInput
+          id="evaluation-start-date"
           value={date}
-          onChange={(e) => {
-            setDate(e.value);
-          }}
-          className="p-3"
-          locale="th"
+          onChange={setDate}
+          required
         />
-      </TextField>
-      <div className="flex w-full items-center justify-center gap-5">
-        <Button
-          type="submit"
-          className="button-focus h-10 w-max rounded-lg bg-super-main-color px-5 font-semibold text-white"
-        >
+      </div>
+
+      <div className="flex flex-col gap-2 border-t border-third-color pt-4 sm:flex-row sm:justify-end">
+        <Button type="submit" className="btn btn-primary w-full sm:w-auto">
+          <LuPlayCircle aria-hidden="true" className="size-4" />
           เริ่มการประเมิน
         </Button>
       </div>

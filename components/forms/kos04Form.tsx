@@ -1,94 +1,95 @@
 import { UseQueryResult } from "@tanstack/react-query";
 import React from "react";
 import { ResponseGetFarmerKos04Service } from "../../services/farmer";
-import { GiWeight } from "react-icons/gi";
 import moment from "moment";
-import { Input, Label, TextField } from "react-aria-components";
-import { Calendar } from "primereact/calendar";
-import TypeAmountCombox from "../combox/typeAmountCombox";
+import { LuInbox } from "react-icons/lu";
 
 type Kos04FormProps = {
   kos04: UseQueryResult<ResponseGetFarmerKos04Service, Error>;
 };
-function Kos04Form({ kos04 }: Kos04FormProps) {
-  return (
-    <main className="grid w-11/12 grid-cols-2 gap-5 rounded-lg  bg-fourth-color p-5 xl:grid-cols-3">
-      {kos04.data?.factors.map((factor, index) => {
-        const purchaseDate = moment(factor.purchaseDate)
-          .locale("th")
-          .format("DD/MM/YYYY");
-        return (
-          <section
-            key={index}
-            className="flex h-max w-full flex-col gap-3 rounded-lg  p-2 ring-1 ring-black"
-          >
-            <header className="flex items-center justify-between">
-              <div className="rounded-lg bg-[#502D16] px-4 py-1 text-xl font-semibold text-white">
-                ปัจจัยที่ {index + 1}
-              </div>
-            </header>
-            <Label className="mt-10 w-80 rounded-lg bg-third-color  py-2 text-center text-lg font-bold text-black">
-              ปัจจัยการผลิต - {factor.prodFactorTypes}
-            </Label>
 
-            <TextField className="flex w-80 flex-col  items-start justify-start gap-2 ">
-              <Label className="w-max text-xl font-semibold text-super-main-color">
-                วันที่(ที่ซื้อ/ได้มา) :
-              </Label>
-              <Calendar
-                className="w-full"
-                dateFormat="dd/MM/yy"
-                disabled
-                value={
-                  factor?.purchaseDate ? new Date(factor?.purchaseDate) : null
-                }
-                locale="th"
-              />
-            </TextField>
-            <TextField className="flex w-80  flex-col items-center justify-start">
-              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
-                ชนิดของปัจจัย :
-              </Label>
-              <Input
-                disabled
-                name="prodFactorTypes"
-                value={factor?.prodFactorTypes}
-                type="text"
-                className="w-full rounded-lg p-3 ring-1 ring-gray-300"
-              />
-            </TextField>
-            <TextField className="flex w-80  flex-col items-center justify-start">
-              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
-                ปริมาณ :
-              </Label>
-              <div className="flex w-full items-start justify-center gap-2">
-                <Input
-                  disabled
-                  name="amount"
-                  value={factor?.amount}
-                  type="number"
-                  inputMode="numeric"
-                  className="h-12 w-full rounded-lg p-3 ring-1 ring-gray-300"
-                />
-                <TypeAmountCombox factor={factor} />
+const formatDate = (date?: string) =>
+  date ? moment(date).locale("th").format("D MMM YYYY") : "-";
+
+function Kos04Form({ kos04 }: Kos04FormProps) {
+  const factors = kos04.data?.factors ?? [];
+
+  if (factors.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-2 py-10 text-center">
+        <LuInbox aria-hidden="true" className="size-10 text-fifth-color" />
+        <p className="font-semibold">ยังไม่มีบันทึกปัจจัยการผลิต</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Tablet and desktop */}
+      <div className="hidden overflow-x-auto rounded-lg border border-third-color md:block">
+        <table className="w-full min-w-[640px] text-left text-sm">
+          <thead className="border-b border-third-color bg-fourth-color/70 text-xs font-semibold text-super-main-color/80">
+            <tr>
+              <th scope="col" className="px-4 py-3">ปัจจัยที่</th>
+              <th scope="col" className="px-3 py-3">ชนิดของปัจจัย</th>
+              <th scope="col" className="px-3 py-3">วันที่(ที่ซื้อ/ได้มา)</th>
+              <th scope="col" className="px-3 py-3 text-right">ปริมาณ</th>
+              <th scope="col" className="px-4 py-3">แหล่งที่มา</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-third-color">
+            {factors.map((factor, index) => (
+              <tr key={factor.id ?? index} className="align-top">
+                <td className="whitespace-nowrap px-4 py-3 tabular-nums">{index + 1}</td>
+                <td className="break-words px-3 py-3 font-semibold">
+                  {factor.prodFactorTypes || "-"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-3 tabular-nums">
+                  {formatDate(factor.purchaseDate)}
+                </td>
+                <td className="whitespace-nowrap px-3 py-3 text-right tabular-nums">
+                  {factor.amount?.toLocaleString() ?? "-"} {factor.typeAmount}
+                </td>
+                <td className="break-words px-4 py-3">{factor.source || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Phones */}
+      <ul className="flex flex-col gap-3 md:hidden">
+        {factors.map((factor, index) => (
+          <li
+            key={factor.id ?? index}
+            className="rounded-lg border border-third-color bg-fourth-color/60 p-4"
+          >
+            <p className="text-xs font-medium text-super-main-color/70">
+              ปัจจัยที่ {index + 1}
+            </p>
+            <h4 className="break-words font-semibold">
+              {factor.prodFactorTypes || "-"}
+            </h4>
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+              <div>
+                <dt className="text-xs text-super-main-color/70">วันที่(ที่ซื้อ/ได้มา)</dt>
+                <dd className="font-medium">{formatDate(factor.purchaseDate)}</dd>
               </div>
-            </TextField>
-            <TextField className="flex w-80  flex-col items-center justify-start">
-              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
-                แหล่งที่มา :
-              </Label>
-              <Input
-                disabled
-                name="source"
-                value={factor?.source}
-                type="text"
-                className="w-full rounded-lg p-3 ring-1 ring-gray-300"
-              />
-            </TextField>
-          </section>
-        );
-      })}
-    </main>
+              <div>
+                <dt className="text-xs text-super-main-color/70">ปริมาณ</dt>
+                <dd className="font-medium">
+                  {factor.amount?.toLocaleString() ?? "-"} {factor.typeAmount}
+                </dd>
+              </div>
+              <div className="col-span-2">
+                <dt className="text-xs text-super-main-color/70">แหล่งที่มา</dt>
+                <dd className="break-words font-medium">{factor.source || "-"}</dd>
+              </div>
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

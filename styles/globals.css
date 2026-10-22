@@ -1,6 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Anuphan:wght@100;200;300;400;500;600;700&display=swap");
-
-@layer tailwind-base, primereact, tailwind-utilities;
+@layer tailwind-base, tailwind-utilities;
 
 @layer tailwind-base {
   @tailwind base;
@@ -11,21 +9,109 @@
   @tailwind utilities;
 }
 
-@layer components {
-  .text-title {
-    @apply text-sm font-semibold text-super-main-color xl:text-lg;
+@layer base {
+  /* Keep focused/anchored elements clear of the sticky 4rem top bar. */
+  html {
+    scroll-padding-top: 5rem;
   }
-  .text-subtitle {
-    @apply w-max rounded-lg bg-slate-200 px-3 py-1 pr-8 text-left text-xs font-semibold text-black xl:text-base;
+  body {
+    @apply bg-fourth-color font-Anuphan text-super-main-color antialiased;
   }
-  .button-focus {
-    @apply transition duration-100 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-super-main-color focus:ring-offset-2 active:scale-110;
-  }
-}
-.swal2-popup {
-  font-family: "Anuphan", "sans-serif";
 }
 
-body{
-  background-color: #FFFFEC;
+@layer components {
+  /* Surfaces */
+  .card {
+    @apply rounded-xl border border-third-color bg-white shadow-sm shadow-super-main-color/5;
+  }
+  .card-header {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-third-color px-4 py-3 sm:px-5;
+  }
+  .card-title {
+    @apply text-base font-semibold text-super-main-color sm:text-lg;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-semibold transition
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-main-color focus-visible:ring-offset-2
+      disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-sm {
+    @apply h-8 px-3 text-xs;
+  }
+  .btn-icon {
+    @apply h-10 w-10 px-0;
+  }
+  .btn-primary {
+    @apply bg-main-color text-white hover:brightness-95 active:brightness-90;
+  }
+  .btn-dark {
+    @apply bg-super-main-color text-white hover:brightness-125 active:brightness-110;
+  }
+  .btn-secondary {
+    @apply border border-third-color bg-white text-super-main-color hover:bg-fourth-color active:bg-third-color/50;
+  }
+  .btn-ghost {
+    @apply text-super-main-color hover:bg-third-color/50 active:bg-third-color;
+  }
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 active:bg-red-800;
+  }
+  .btn-danger-soft {
+    @apply border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 active:bg-red-200;
+  }
+
+  /* Segmented control: mark the selected item with aria-pressed="true" */
+  .segmented {
+    @apply inline-flex shrink-0 gap-1 rounded-lg bg-third-color/60 p-1;
+  }
+  .segmented-item {
+    @apply inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-md px-3 text-sm font-medium text-super-main-color/80 transition sm:h-8
+      hover:text-super-main-color
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-main-color
+      aria-pressed:bg-white aria-pressed:font-semibold aria-pressed:text-super-main-color aria-pressed:shadow-sm;
+  }
+
+  /* Form fields */
+  .label {
+    @apply text-sm font-medium text-super-main-color;
+  }
+  .input {
+    @apply h-10 w-full rounded-lg border border-third-color bg-white px-3 text-sm text-super-main-color transition
+      placeholder:text-super-main-color/60
+      focus:border-main-color focus:outline-none focus:ring-2 focus:ring-main-color/25
+      disabled:cursor-not-allowed disabled:bg-fourth-color disabled:opacity-70;
+  }
+  .field-error {
+    @apply text-sm text-red-600;
+  }
+
+  /* Legacy helpers still used by the KOS forms */
+  .text-title {
+    @apply text-sm font-semibold text-super-main-color xl:text-base;
+  }
+  .text-subtitle {
+    @apply w-max max-w-full rounded-md bg-third-color px-3 py-1 text-left text-xs font-semibold text-super-main-color xl:text-sm;
+  }
+  .button-focus {
+    @apply transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-main-color focus-visible:ring-offset-2;
+  }
+}
+
+.swal2-popup {
+  font-family: var(--font-anuphan), "Anuphan", sans-serif;
+}
+div.swal2-popup .swal2-title,
+div.swal2-popup .swal2-html-container {
+  color: #5c430d;
+}
+/* Theme defaults only; a per-dialog confirm/cancelButtonColor (inline style) still wins. */
+div.swal2-popup .swal2-styled.swal2-confirm:not([style*="background-color"]) {
+  background-color: #597e52;
+}
+div.swal2-popup .swal2-styled.swal2-cancel:not([style*="background-color"]) {
+  background-color: #fff;
+  color: #5c430d;
+  box-shadow: inset 0 0 0 1px #f1e4c3;
 }

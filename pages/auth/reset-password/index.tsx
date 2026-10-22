@@ -1,5 +1,6 @@
+import Head from "next/head";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
   FieldError,
@@ -8,15 +9,33 @@ import {
   Label,
   TextField,
 } from "react-aria-components";
-import Swal from "sweetalert2";
-import {
-  ForgetPasswordService,
-  ResetPasswordService,
-} from "../../../services/auth";
+import { LuCheckCircle2, LuEye, LuEyeOff, LuLoader2 } from "react-icons/lu";
+import { ResetPasswordService } from "../../../services/auth";
 import { useRouter } from "next/router";
-import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
-import HomepageSidebar from "../../../components/sidebars/homepageSidebar";
-import User from "../../../components/svgs/User";
+import AuthLayout from "../../../layouts/authLayout";
+
+type PasswordToggleProps = {
+  shown: boolean;
+  onToggle: () => void;
+};
+
+function PasswordToggle({ shown, onToggle }: PasswordToggleProps) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={shown ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+      aria-pressed={shown}
+      className="btn btn-ghost btn-sm absolute right-1 top-1 w-8 px-0"
+    >
+      {shown ? (
+        <LuEyeOff aria-hidden="true" className="size-4" />
+      ) : (
+        <LuEye aria-hidden="true" className="size-4" />
+      )}
+    </button>
+  );
+}
 
 const Index = () => {
   const [resetPasswordData, setResetPasswordData] = useState<{
@@ -25,40 +44,41 @@ const Index = () => {
   }>();
   const [triggerShowPassword, setTriggerShowPassword] =
     useState<boolean>(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isReset, setIsReset] = useState(false);
+  const successHeadingRef = useRef<HTMLHeadingElement>(null);
   const router = useRouter();
-  const handleSummitResetPasswordPassword = async (e: React.FormEvent) => {
+
+  // The form unmounts on success, so land keyboard and screen-reader users on the result.
+  useEffect(() => {
+    if (isReset) successHeadingRef.current?.focus();
+  }, [isReset]);
+
+  const handleSummitResetPasswordPassword = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    if (resetPasswordData?.password !== resetPasswordData?.confirmPassword) {
+      setErrorMessage("รหัสผ่านไม่ตรงกัน");
+      return;
+    }
+    setSubmitting(true);
     try {
-      e.preventDefault();
-      if (resetPasswordData?.password !== resetPasswordData?.confirmPassword) {
-        throw new Error("รหัสผ่านไม่ตรงกัน");
-      }
-      Swal.fire({
-        title: "กรุณารอสักครู่",
-        html: "กำลังดำเนินการ...",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
       await ResetPasswordService({
         newPassword: resetPasswordData?.password as string,
         passwordResetToken: router.query.passwordResetToken as string,
       });
-      router.push({
-        pathname: "/",
-      });
-      Swal.fire({
-        icon: "success",
-        title: "สำเร็จ",
-        text: "รหัสผ่านของท่านได้รับการเปลี่ยนแล้ว",
-      });
+      setIsReset(true);
     } catch (error: any) {
-      console.log(error);
-      Swal.fire({
-        icon: "error",
-        title: "เกิดข้อผิดพลาด",
-        text: error.message,
-      });
+      const message = error?.message;
+      setErrorMessage(
+        (Array.isArray(message) ? message.join(" ") : message) ??
+          "ตั้งรหัสผ่านใหม่ไม่สำเร็จ กรุณาลองอีกครั้ง",
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -72,110 +92,120 @@ const Index = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-screen font-Anuphan">
-      {/* Left */}
-      <HomepageSidebar />
-      {/* Right */}
-      <div className="flex h-full w-full flex-col items-center lg:mt-6 lg:justify-center">
-        <div className="my-8 flex w-full flex-col items-center justify-center  ">
-          <section className="mt-7 lg:mt-0">
-            <h1
-              className="\ w-[15.625rem] rounded-full bg-[#3193A9] p-3 px-[3rem] text-center
-           text-xl font-semibold text-white md:w-[18rem] md:px-[2rem] lg:text-base"
-            >
-              ตั้งรหัสผ่านใหม่
-            </h1>
-          </section>
+    <AuthLayout
+      title="ตั้งรหัสผ่านใหม่"
+      description="กำหนดรหัสผ่านใหม่สำหรับบัญชีของท่าน อย่างน้อย 8 ตัวอักษร"
+    >
+      <Head>
+        <title>ตั้งรหัสผ่านใหม่ | Korat KOS</title>
+      </Head>
 
-          <div className="my-10 w-[7rem] lg:my-6 ">
-            <User />
-          </div>
-
-          <Form
-            onSubmit={handleSummitResetPasswordPassword}
-            className="flex w-[85%] flex-col items-center gap-5 md:mt-1 lg:gap-2"
-          >
-            <TextField
-              type="password"
-              isRequired
-              className="relative flex w-max flex-col items-center   "
-            >
-              <div className="flex flex-col items-start justify-start gap-2">
-                <Label className="text-xl font-semibold text-[#597E52] md:text-sm">
-                  รหัสผ่านใหม่ :
-                </Label>
-                <Input
-                  name="password"
-                  min={8}
-                  value={resetPasswordData?.password}
-                  onChange={handleChangeResetPasswordData}
-                  type={triggerShowPassword ? "text" : "password"}
-                  className="h-10 w-[18rem] rounded-lg border-[1px] border-solid  py-2 pl-3 text-sm md:py-1"
-                />
-                {triggerShowPassword ? (
-                  <FaRegEye
-                    className="absolute bottom-0 right-5 top-7 m-auto"
-                    onClick={() => setTriggerShowPassword((prev) => !prev)}
-                  />
-                ) : (
-                  <FaRegEyeSlash
-                    className="absolute bottom-0 right-5 top-7 m-auto"
-                    onClick={() => setTriggerShowPassword((prev) => !prev)}
-                  />
-                )}
-              </div>
-              <div className="flex w-full justify-center">
-                <FieldError className="mt-2 w-[90%] text-center text-sm text-red-600" />
-              </div>
-            </TextField>
-
-            <TextField
-              type="password"
-              isRequired
-              className="relative flex w-max flex-col items-center   "
-            >
-              <div className="flex flex-col items-start justify-start gap-2">
-                <Label className="text-xl font-semibold text-[#597E52] md:text-sm">
-                  กรอกรหัสผ่านอีกครั้ง :
-                </Label>
-                <Input
-                  min={8}
-                  name="confirmPassword"
-                  type={triggerShowPassword ? "text" : "password"}
-                  value={resetPasswordData?.confirmPassword}
-                  onChange={handleChangeResetPasswordData}
-                  className="h-10 w-[18rem] rounded-lg border-[1px] border-solid border-slate-300 py-2 pl-3 text-sm md:py-1"
-                />
-                {triggerShowPassword ? (
-                  <FaRegEye
-                    className="absolute bottom-0 right-5 top-7 m-auto"
-                    onClick={() => setTriggerShowPassword((prev) => !prev)}
-                  />
-                ) : (
-                  <FaRegEyeSlash
-                    className="absolute bottom-0 right-5 top-7 m-auto"
-                    onClick={() => setTriggerShowPassword((prev) => !prev)}
-                  />
-                )}
-              </div>
-              <div className="flex w-full justify-center">
-                <FieldError className="mt-2 w-[90%] text-center text-sm text-red-600" />
-              </div>
-            </TextField>
-
-            <div className="flex justify-center">
-              <Button
-                type="submit"
-                className="mt-5 w-[13rem] rounded-full bg-[#597E52] p-3 text-center 
-           text-xl font-semibold text-white drop-shadow-lg duration-300 hover:bg-[#81b077] md:text-base"
+      <div role="status">
+        {isReset && (
+          <div className="flex gap-3 rounded-lg border border-main-color/30 bg-main-color/10 px-4 py-3 text-sm">
+            <LuCheckCircle2
+              aria-hidden="true"
+              className="mt-0.5 size-5 shrink-0 text-main-color"
+            />
+            <div className="min-w-0">
+              <h2
+                ref={successHeadingRef}
+                tabIndex={-1}
+                className="font-semibold focus:outline-none"
               >
-                ยืนยัน
-              </Button>
+                ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว
+              </h2>
+              <p className="mt-1 text-super-main-color/80">
+                ใช้รหัสผ่านใหม่เพื่อเข้าสู่ระบบได้ทันที
+              </p>
             </div>
-          </Form>
-        </div>
+          </div>
+        )}
       </div>
-    </div>
+
+      {isReset ? (
+        <Link
+          href="/auth/sign-in"
+          className="btn btn-primary mt-6 h-11 w-full text-base"
+        >
+          เข้าสู่ระบบ
+        </Link>
+      ) : (
+        <Form
+          onSubmit={handleSummitResetPasswordPassword}
+          className="flex flex-col gap-5"
+        >
+          {errorMessage && (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+            >
+              {errorMessage}
+            </div>
+          )}
+
+          <TextField
+            name="password"
+            type={triggerShowPassword ? "text" : "password"}
+            isRequired
+            minLength={8}
+            className="flex flex-col gap-1.5"
+          >
+            <Label className="label">รหัสผ่านใหม่</Label>
+            <div className="relative">
+              <Input
+                onChange={handleChangeResetPasswordData}
+                autoComplete="new-password"
+                className="input pr-11"
+              />
+              <PasswordToggle
+                shown={triggerShowPassword}
+                onToggle={() => setTriggerShowPassword((prev) => !prev)}
+              />
+            </div>
+            <FieldError className="field-error" />
+          </TextField>
+
+          <TextField
+            name="confirmPassword"
+            type={triggerShowPassword ? "text" : "password"}
+            isRequired
+            minLength={8}
+            validate={(value) =>
+              value && value !== resetPasswordData?.password
+                ? "รหัสผ่านไม่ตรงกัน"
+                : null
+            }
+            className="flex flex-col gap-1.5"
+          >
+            <Label className="label">ยืนยันรหัสผ่านใหม่</Label>
+            <div className="relative">
+              <Input
+                onChange={handleChangeResetPasswordData}
+                autoComplete="new-password"
+                className="input pr-11"
+              />
+              <PasswordToggle
+                shown={triggerShowPassword}
+                onToggle={() => setTriggerShowPassword((prev) => !prev)}
+              />
+            </div>
+            <FieldError className="field-error" />
+          </TextField>
+
+          <Button
+            type="submit"
+            isDisabled={submitting}
+            className="btn btn-primary mt-2 h-11 w-full text-base"
+          >
+            {submitting && (
+              <LuLoader2 aria-hidden="true" className="size-5 motion-safe:animate-spin" />
+            )}
+            {submitting ? "กำลังบันทึกรหัสผ่าน" : "ตั้งรหัสผ่านใหม่"}
+          </Button>
+        </Form>
+      )}
+    </AuthLayout>
   );
 };
 

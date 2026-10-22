@@ -1,76 +1,70 @@
 import React, { useState } from "react";
 import { User } from "../../model";
-import {
-  Button,
-  FileTrigger,
-  Form,
-  Input,
-  Label,
-  TextField,
-} from "react-aria-components";
-import { AiFillPicture } from "react-icons/ai";
-import Image from "next/image";
-import { InputMask, InputMaskChangeEvent } from "primereact/inputmask";
+import { LuKeyRound } from "react-icons/lu";
 import { DefinedUseQueryResult } from "@tanstack/react-query";
-import { UploadProfileUserService } from "../../services/user";
 import ChangePassword from "./changePassword";
 
 type GernerralDataProps = {
   user: DefinedUseQueryResult<User, Error>;
 };
-type UserData = {
-  email: string;
-};
 function SecurityData({ user }: GernerralDataProps) {
-  const [userData, setUserData] = useState<UserData>({
-    email: user.data.email,
-  });
   const [triggerChangePassword, setTriggerChangePassword] =
     useState<boolean>(false);
-
-  const handleChangeUserData = (
-    e: InputMaskChangeEvent | React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const { name, value } = e.target;
-    setUserData((prev) => ({ ...prev, [name]: value }));
-  };
 
   return (
     <>
       {triggerChangePassword && (
         <ChangePassword setTriggerChangePassword={setTriggerChangePassword} />
       )}
-      <Form className="flex flex-col items-center justify-center gap-5">
-        <div className="flex h-96 w-full justify-center gap-2 rounded-lg bg-fourth-color p-5 font-Anuphan">
-          <div className="max flex flex-col items-start justify-center gap-5">
-            <h2 className="text-2xl font-semibold text-[#C6A969]">
-              E-mail และการเปลี่ยนรหัสผ่าน
+      <section aria-labelledby="security-data-title" className="card">
+        <div className="card-header">
+          <div className="min-w-0">
+            <h2 id="security-data-title" className="card-title">
+              อีเมลและการเปลี่ยนรหัสผ่าน
             </h2>
-            <TextField className="flex w-full items-center justify-start gap-2">
-              <Label className="text-xl font-semibold text-super-main-color">
-                E-mail :{" "}
-              </Label>
-              <Input
-                disabled
-                name="email"
-                onChange={handleChangeUserData}
-                value={userData.email}
-                className="w-60 rounded-lg bg-white p-2 ring-1 ring-super-main-color"
-              />
-            </TextField>
-            <Button
-              onPress={() => {
-                document.body.style.overflow = "hidden";
-                setTriggerChangePassword(() => true);
-              }}
-              type="button"
-              className="text-lg font-bold text-blue-700 underline"
-            >
-              เปลี่ยนรหัสผ่าน?
-            </Button>
+            <p className="text-sm text-super-main-color/80">
+              ข้อมูลที่ใช้เข้าสู่ระบบ Korat KOS
+            </p>
           </div>
         </div>
-      </Form>
+
+        <div className="divide-y divide-third-color">
+          <div className="grid gap-1.5 p-4 sm:grid-cols-2 sm:items-center sm:gap-4 sm:p-5">
+            <div>
+              <label htmlFor="account-email" className="label">
+                อีเมล
+              </label>
+              <p className="text-xs text-super-main-color/80">
+                ใช้สำหรับเข้าสู่ระบบ แก้ไขเองไม่ได้
+              </p>
+            </div>
+            <input
+              id="account-email"
+              type="email"
+              disabled
+              value={user.data.email}
+              className="input"
+            />
+          </div>
+
+          <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="min-w-0">
+              <p className="label">รหัสผ่าน</p>
+              <p className="text-xs text-super-main-color/80">
+                ต้องยืนยันรหัสผ่านเดิมก่อนตั้งรหัสผ่านใหม่
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setTriggerChangePassword(() => true)}
+              className="btn btn-secondary w-full sm:w-auto"
+            >
+              <LuKeyRound aria-hidden="true" className="size-4" />
+              เปลี่ยนรหัสผ่าน
+            </button>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

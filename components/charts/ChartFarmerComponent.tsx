@@ -1,94 +1,78 @@
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Chart, ChartData, registerables } from "chart.js";
-import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Bar } from "react-chartjs-2";
-import { Amphure, Tambon } from "../../model";
-import {
-  GetAllFarmereByGroupService,
-  GetAllPlantTypeByGroupService,
-  GroupsType,
-} from "../../services/overview";
-import {
-  GetAllAmphuresByProvinceService,
-  GetAllTambonByAmphureService,
-} from "../../services/thai-data";
+import { Amphure } from "../../model";
+import { GetAllFarmereByGroupService } from "../../services/overview";
+import { GetAllAmphuresByProvinceService } from "../../services/thai-data";
+import Select from "../ui/Select";
+import { barChartOptions, chartColors, useChartFont } from "./chartTheme";
 
 Chart.register(...registerables);
 
-type ChartProps = {};
-
-function ChartFarmerComponent({}: ChartProps) {
+function ChartFarmerComponent() {
+  useChartFont();
   const [selectAumpure, setselectAumpure] = useState<Amphure | null>(null);
   const amphures = useQuery({
     queryKey: ["amphures"],
     queryFn: () => GetAllAmphuresByProvinceService(),
   });
-  const plantType = useQuery({
+  const farmerGroups = useQuery({
     queryKey: ["farmer-groups", { amphure: selectAumpure?.name_th }],
     queryFn: () =>
       GetAllFarmereByGroupService({ amphure: selectAumpure?.name_th }),
     staleTime: 1000 * 6,
     refetchInterval: 1000 * 6,
   });
-  const [data, setData] = useState<ChartData<"bar">>({
-    labels: plantType.data?.map((group) => group.district),
-    datasets: [
-      {
-        label: "จำนวนเกษตรกร",
-        data: plantType.data?.map((group) => group._count.district) ?? [],
-        borderWidth: 1,
-        backgroundColor: "#5C430D",
-        borderColor: "#F1E4C3",
-      },
-    ],
-  });
 
-  useEffect(() => {
-    if (plantType.data) {
-      setData(() => {
-        return {
-          labels: plantType.data?.map((group) =>
-            selectAumpure ? group.subdistrict : group.district,
-          ),
-          datasets: [
-            {
-              label: "จำนวนเกษตรกร",
-              data:
-                plantType.data?.map((group) =>
-                  selectAumpure
-                    ? group._count.subdistrict
-                    : group._count.district,
-                ) ?? [],
-              borderWidth: 1,
-              backgroundColor: "#5C430D",
-              borderColor: "#F1E4C3",
-            },
-          ],
-        };
-      });
-    }
-  }, [plantType.data]);
+  // With an amphure selected the API groups by tambon instead of amphure.
+  const data = useMemo<ChartData<"bar">>(
+    () => ({
+      labels:
+        farmerGroups.data?.map((group) =>
+          selectAumpure ? group.subdistrict : group.district,
+        ) ?? [],
+      datasets: [
+        {
+          label: "จำนวนเกษตรกร",
+          data:
+            farmerGroups.data?.map((group) =>
+              selectAumpure ? group._count.subdistrict : group._count.district,
+            ) ?? [],
+          backgroundColor: chartColors.brown,
+          borderRadius: 6,
+          maxBarThickness: 40,
+        },
+      ],
+    }),
+    [farmerGroups.data, selectAumpure],
+  );
 
   return (
-    <div className="flex h-max w-full flex-col items-center justify-center rounded-lg bg-fourth-color p-3  font-Anuphan">
-      <h1 className="w-full text-left text-2xl font-extrabold text-[#5C430D]">
-        รายชื่อจำนวนเกษตรกรที่ลงทะเบียน
-      </h1>
-      <Dropdown
-        placeholder="เลือกอำเภอ"
-        value={selectAumpure}
-        onChange={(e: DropdownChangeEvent) => {
-          setselectAumpure(e.value);
-        }}
-        options={amphures.data}
-        optionLabel="name_th"
-        className="w-60"
-        loading={amphures.isLoading}
-        showClear
-      />
-      <Bar data={data} />
-    </div>
+    <section className="card flex min-w-0 flex-col">
+      <div className="card-header">
+        <h2 className="card-title">เกษตรกรที่ลงทะเบียน</h2>
+        <Select
+          label="อำเภอ"
+          placeholder="ทุกอำเภอ"
+          value={selectAumpure}
+          onChange={setselectAumpure}
+          options={amphures.data}
+          getLabel={(amphure) => amphure.name_th}
+          getKey={(amphure) => amphure.id}
+          className="w-full sm:w-48"
+          loading={amphures.isLoading}
+          clearable
+        />
+      </div>
+      <div className="relative h-64 px-2 py-4 sm:h-72 sm:px-4">
+        {farmerGroups.isLoading ? (
+          <div className="h-full w-full animate-pulse rounded-lg bg-fourth-color" />
+        ) : (
+          <Bar data={data} options={barChartOptions} aria-label="กราฟจำนวนเกษตรกรที่ลงทะเบียน" role="img" />
+        )}
+      </div>
+    </section>
   );
 }
 

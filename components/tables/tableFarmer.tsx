@@ -3,14 +3,20 @@ import moment from "moment";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
-import { FaSortAmountDown, FaSortAmountUpAlt } from "react-icons/fa";
-import { MdAddChart } from "react-icons/md";
-import { RegisterFormEvaluation, StatusEvaluation } from "../../model";
+import {
+  LuArrowDown,
+  LuArrowUp,
+  LuClipboardCheck,
+  LuInbox,
+  LuPencil,
+} from "react-icons/lu";
+import { RegisterFormEvaluation } from "../../model";
 import {
   RequestGetAllReadyRegisterFormByPage,
   ResponseGetAllRegisterFormaEvaluation,
 } from "../../services/register-form";
 import UpdateCertificateFormStatus from "../forms/UpdateCertificateFormStatus";
+import StatusBadge, { certificateStatusLabels } from "../ui/StatusBadge";
 
 type TableFarmerProps = {
   registerForms: UseQueryResult<ResponseGetAllRegisterFormaEvaluation, Error>;
@@ -20,28 +26,52 @@ type TableFarmerProps = {
   registerFormsQuery: RequestGetAllReadyRegisterFormByPage;
 };
 
-const statusEvaluation = (status: StatusEvaluation) => {
-  switch (status) {
-    case "pending":
-      return "รอการประเมิน";
+type Row = ResponseGetAllRegisterFormaEvaluation["data"][number];
 
-    case "approved":
-      return "ผ่านการประเมิน";
-    case "rejected":
-      return "ไม่ผ่านการประเมิน";
-  }
-};
-const certificateStatus = (status: StatusEvaluation) => {
-  switch (status) {
-    case "pending":
-      return "รอการพิจารณา";
+const formatDate = (date?: Date) =>
+  date ? moment(date).locale("th").format("D MMM YYYY") : "-";
 
-    case "approved":
-      return "ผ่านการพิจารณา";
-    case "rejected":
-      return "ไม่ผ่านการพิจารณา";
+function FarmerAvatar({ src, size }: { src: string; size: "sm" | "md" }) {
+  return (
+    <span
+      className={`relative shrink-0 overflow-hidden rounded-full bg-third-color ${size === "sm" ? "size-9" : "size-10"}`}
+    >
+      <Image src={src} fill sizes="40px" alt="" className="object-cover" />
+    </span>
+  );
+}
+
+function CertificateStatus({
+  row,
+  onEdit,
+}: {
+  row: Row;
+  onEdit: (registerForm: RegisterFormEvaluation) => void;
+}) {
+  if (!row.registerForm) {
+    return <StatusBadge status={null} />;
   }
-};
+  const status = row.registerForm.certificate_status ?? "pending";
+  return (
+    <button
+      type="button"
+      onClick={() => onEdit(row.registerForm)}
+      aria-label={`แก้ไขผลการพิจารณาใบรับรองของ ${row.farmer.firstName} ${row.farmer.lastName}`}
+      className="group inline-flex items-center gap-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-main-color"
+    >
+      <StatusBadge
+        status={status}
+        label={certificateStatusLabels[status]}
+        className="group-hover:ring-main-color"
+      />
+      <LuPencil
+        aria-hidden="true"
+        className="size-3.5 text-super-main-color/60 group-hover:text-main-color"
+      />
+    </button>
+  );
+}
+
 function TableFarmer({
   registerForms,
   setRegisterFormsQuery,
@@ -49,6 +79,42 @@ function TableFarmer({
 }: TableFarmerProps) {
   const [selectRegisterForm, setSelectRegisterForm] =
     useState<RegisterFormEvaluation | null>(null);
+  const sortDirection = registerFormsQuery.orderBy?.summitEvaluationDate ?? "desc";
+
+  const toggleSort = () =>
+    setRegisterFormsQuery((prev) => ({
+      ...prev,
+      page: 1,
+      orderBy: {
+        summitEvaluationDate:
+          prev.orderBy?.summitEvaluationDate === "asc" ? "desc" : "asc",
+      },
+    }));
+
+  const rows = registerForms.data?.data ?? [];
+
+  if (registerForms.isError) {
+    return (
+      <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
+        <p className="font-semibold">โหลดรายการคำขอไม่สำเร็จ</p>
+        <button type="button" onClick={() => registerForms.refetch()} className="btn btn-secondary">
+          ลองอีกครั้ง
+        </button>
+      </div>
+    );
+  }
+
+  if (!registerForms.isLoading && rows.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-2 px-4 py-12 text-center">
+        <LuInbox aria-hidden="true" className="size-10 text-fifth-color" />
+        <p className="font-semibold">ไม่พบคำขอรับการประเมิน</p>
+        <p className="text-sm text-super-main-color/80">
+          ลองเปลี่ยนสถานะ พื้นที่ หรือคำค้นหา
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -59,202 +125,150 @@ function TableFarmer({
           selectRegisterForm={selectRegisterForm}
         />
       )}
-      <div className="h-96 w-full overflow-auto rounded-lg bg-fourth-color p-5">
-        <table className="w-max min-w-full">
-          <thead>
-            <tr className="">
-              {[
-                "รายชื่อ",
-                "เบอร์โทรศัพท์",
-                "สถานะ",
-                "พิจารณา",
-                "รอบครั้งการประเมิน",
-              ].map((text, i) => {
-                return (
-                  <td key={i}>
-                    <div className="w-full rounded-lg bg-super-main-color py-1 text-center font-semibold text-white">
-                      {text}
-                    </div>
-                  </td>
-                );
-              })}
-              <td>
-                <div
-                  onClick={() =>
-                    setRegisterFormsQuery((prev) => {
-                      return {
-                        ...prev,
-                        orderBy: {
-                          summitEvaluationDate:
-                            prev.orderBy?.summitEvaluationDate === "asc"
-                              ? "desc"
-                              : "asc",
-                        },
-                      };
-                    })
-                  }
-                  className="flex w-full cursor-pointer select-none items-center justify-center gap-1 rounded-lg bg-super-main-color py-1 text-center
-             font-semibold text-white transition duration-100 active:scale-110"
+
+      {/* Tablet and desktop */}
+      <div className="hidden overflow-x-auto md:block">
+        <table className="w-full min-w-[760px] text-left text-sm">
+          <thead className="border-b border-third-color bg-fourth-color/70 text-xs font-semibold text-super-main-color/80">
+            <tr>
+              <th scope="col" className="px-5 py-3">เกษตรกร</th>
+              <th scope="col" className="px-3 py-3">สถานะการประเมิน</th>
+              <th scope="col" className="px-3 py-3">การพิจารณาใบรับรอง</th>
+              <th scope="col" className="px-3 py-3">ประเมินแล้ว</th>
+              <th
+                scope="col"
+                className="px-3 py-3"
+                aria-sort={sortDirection === "asc" ? "ascending" : "descending"}
+              >
+                <button
+                  type="button"
+                  onClick={toggleSort}
+                  className="-mx-1 inline-flex items-center gap-1 rounded px-1 hover:text-super-main-color focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-main-color"
                 >
                   วันยื่นคำขอ
-                  {registerFormsQuery.orderBy?.summitEvaluationDate ===
-                  "asc" ? (
-                    <FaSortAmountDown />
+                  {sortDirection === "asc" ? (
+                    <LuArrowUp aria-hidden="true" className="size-3.5" />
                   ) : (
-                    <FaSortAmountUpAlt />
+                    <LuArrowDown aria-hidden="true" className="size-3.5" />
                   )}
-                </div>
-              </td>
-              <td>
-                <div className="w-full rounded-lg bg-super-main-color py-1 text-center font-semibold text-white">
-                  การประเมิน
-                </div>
-              </td>
+                </button>
+              </th>
+              <th scope="col" className="px-5 py-3">
+                <span className="sr-only">การดำเนินการ</span>
+              </th>
             </tr>
           </thead>
-          <tbody className="mb-5  gap-2">
+          <tbody className="divide-y divide-third-color">
             {registerForms.isLoading
-              ? [...Array(5)].map((_, index) => {
-                  return (
-                    <tr key={index} className="">
-                      <td>
-                        <div className="h-10 w-full animate-pulse rounded-lg bg-slate-400"></div>
+              ? [...Array(6)].map((_, index) => (
+                  <tr key={index}>
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="size-9 animate-pulse rounded-full bg-third-color" />
+                        <div className="h-4 w-36 animate-pulse rounded bg-third-color" />
+                      </div>
+                    </td>
+                    {[...Array(4)].map((_, cell) => (
+                      <td key={cell} className="px-3 py-3">
+                        <div className="h-4 w-20 animate-pulse rounded bg-third-color/70" />
                       </td>
-                      <td>
-                        <div className="h-10 w-full animate-pulse rounded-lg bg-slate-100"></div>
-                      </td>
-                      <td>
-                        <div className="h-10 w-full animate-pulse rounded-lg bg-slate-300"></div>
-                      </td>
-                      <td>
-                        <div className="h-10 w-full animate-pulse rounded-lg bg-slate-500"></div>
-                      </td>
-                      <td>
-                        <div className="h-10 w-full animate-pulse rounded-lg bg-slate-300"></div>
-                      </td>
-                      <td>
-                        <div className="h-10 w-full animate-pulse rounded-lg bg-slate-600"></div>
-                      </td>
-                      <td>
-                        <div className="h-10 w-full animate-pulse rounded-lg bg-slate-400"></div>
-                      </td>
-                    </tr>
-                  );
-                })
-              : registerForms.data?.data.map((registerForm) => {
-                  const summitDate = moment(
-                    registerForm.registerForm?.summitEvaluationDate,
-                  )
-                    .locale("th")
-                    .format("DD/MMMM/YYYY");
-                  const status = statusEvaluation(
-                    registerForm.registerForm?.status,
-                  );
-                  const certificate_status = certificateStatus(
-                    registerForm.registerForm?.certificate_status ?? "pending",
-                  );
-                  return (
-                    <tr key={registerForm.farmer.id} className="  ">
-                      <td>
-                        <div className="flex w-max items-center justify-center gap-2 px-4">
-                          <div className="relative h-8 w-8 overflow-hidden rounded-full ">
-                            <Image
-                              src={registerForm.farmer.picture}
-                              fill
-                              alt="picture profile"
-                              className="object-cover"
-                            />
-                          </div>
-
-                          <span className=" w-max text-sm ">
-                            {registerForm.farmer.firstName}{" "}
-                            {registerForm.farmer.lastName}
-                          </span>
+                    ))}
+                    <td className="px-5 py-3">
+                      <div className="ml-auto h-8 w-20 animate-pulse rounded-lg bg-third-color" />
+                    </td>
+                  </tr>
+                ))
+              : rows.map((row) => (
+                  <tr key={row.farmer.id} className="transition-colors hover:bg-fourth-color/60">
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <FarmerAvatar src={row.farmer.picture} size="sm" />
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold">
+                            {row.farmer.firstName} {row.farmer.lastName}
+                          </p>
+                          <p className="text-xs text-super-main-color/70">
+                            {row.farmer.phoneNumber}
+                          </p>
                         </div>
-                      </td>
-                      <td>
-                        <div className="flex h-10 w-full items-center  justify-start gap-2  text-left  font-semibold">
-                          {registerForm.farmer.phoneNumber}
-                        </div>
-                      </td>
-                      <td>
-                        <div
-                          className={`flex h-10 w-full items-center  justify-center gap-2 rounded-lg
-                     ${
-                       registerForm?.registerForm?.status === "pending"
-                         ? "bg-secondary-color"
-                         : registerForm?.registerForm?.status === "approved"
-                           ? "bg-green-700"
-                           : registerForm?.registerForm?.status === "rejected"
-                             ? "bg-red-700"
-                             : "bg-gray-600"
-                     } font-semibold  text-white`}
-                        >
-                          {registerForm.registerForm
-                            ? status
-                            : "ยังไม่ยื่นคำขอ"}
-                        </div>
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => {
-                            if (registerForm.registerForm) {
-                              setSelectRegisterForm(
-                                () => registerForm.registerForm,
-                              );
-                            } else {
-                              alert(
-                                "ไม่สามารถอัปเดทสถานะพิจารณาได้เนื่องจากไม่มีผลการประเมิน",
-                              );
-                            }
-                          }}
-                          className={`flex h-10 w-full items-center justify-center gap-2  rounded-lg hover:ring-1 active:scale-105
-                     ${
-                       registerForm?.registerForm?.certificate_status ===
-                       "pending"
-                         ? "bg-secondary-color"
-                         : registerForm?.registerForm?.certificate_status ===
-                             "approved"
-                           ? "bg-green-700"
-                           : registerForm?.registerForm?.certificate_status ===
-                               "rejected"
-                             ? "bg-red-700"
-                             : "bg-gray-600"
-                     } font-semibold  text-white`}
-                        >
-                          {registerForm.registerForm
-                            ? certificate_status
-                            : "ยังไม่ยื่นคำขอ"}
-                        </button>
-                      </td>
-                      <td>
-                        <div className="flex h-10 w-full items-center justify-center gap-2 text-xs font-semibold  lg:text-sm xl:text-base">
-                          ประเมินไปแล้ว {registerForm.formEvaluations?.length}{" "}
-                          ครั้ง
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex h-10 w-full items-center justify-center gap-2 text-xs font-semibold  lg:text-sm xl:text-base">
-                          {registerForm.registerForm ? summitDate : "-"}
-                        </div>
-                      </td>
-
-                      <td>
-                        <Link
-                          className="flex h-10 w-full cursor-pointer items-center justify-center  gap-2 rounded-lg bg-super-main-color font-semibold text-white
-                     drop-shadow-lg transition duration-100 hover:scale-105 active:scale-110"
-                          href={`/farmer/${registerForm.farmer.id}`}
-                        >
-                          <MdAddChart />
-                          ประเมิน
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <StatusBadge status={row.registerForm?.status ?? null} />
+                    </td>
+                    <td className="px-3 py-3">
+                      <CertificateStatus row={row} onEdit={setSelectRegisterForm} />
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 tabular-nums">
+                      {row.formEvaluations?.length ?? 0} ครั้ง
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 tabular-nums">
+                      {row.registerForm
+                        ? formatDate(row.registerForm.summitEvaluationDate)
+                        : "-"}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <Link href={`/farmer/${row.farmer.id}`} className="btn btn-dark btn-sm">
+                        <LuClipboardCheck aria-hidden="true" className="size-4" />
+                        ประเมิน
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
           </tbody>
         </table>
       </div>
+
+      {/* Phones */}
+      <ul className="divide-y divide-third-color md:hidden">
+        {registerForms.isLoading
+          ? [...Array(4)].map((_, index) => (
+              <li key={index} className="flex items-center gap-3 p-4">
+                <div className="size-10 animate-pulse rounded-full bg-third-color" />
+                <div className="h-4 flex-1 animate-pulse rounded bg-third-color" />
+              </li>
+            ))
+          : rows.map((row) => (
+              <li key={row.farmer.id} className="p-4">
+                <div className="flex items-start gap-3">
+                  <FarmerAvatar src={row.farmer.picture} size="md" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold">
+                      {row.farmer.firstName} {row.farmer.lastName}
+                    </p>
+                    <p className="text-xs text-super-main-color/70">
+                      {row.farmer.phoneNumber}
+                    </p>
+                  </div>
+                  <StatusBadge status={row.registerForm?.status ?? null} />
+                </div>
+                <dl className="mt-3 grid grid-cols-2 gap-x-3 text-xs">
+                  <div>
+                    <dt className="text-super-main-color/70">วันยื่นคำขอ</dt>
+                    <dd className="font-medium">
+                      {row.registerForm
+                        ? formatDate(row.registerForm.summitEvaluationDate)
+                        : "-"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-super-main-color/70">ประเมินแล้ว</dt>
+                    <dd className="font-medium">{row.formEvaluations?.length ?? 0} ครั้ง</dd>
+                  </div>
+                </dl>
+                <div className="mt-3 flex items-end justify-between gap-3">
+                  <div className="min-w-0 text-xs">
+                    <p className="mb-1 text-super-main-color/70">การพิจารณาใบรับรอง</p>
+                    <CertificateStatus row={row} onEdit={setSelectRegisterForm} />
+                  </div>
+                  <Link href={`/farmer/${row.farmer.id}`} className="btn btn-dark">
+                    <LuClipboardCheck aria-hidden="true" className="size-4" />
+                    ประเมิน
+                  </Link>
+                </div>
+              </li>
+            ))}
+      </ul>
     </>
   );
 }

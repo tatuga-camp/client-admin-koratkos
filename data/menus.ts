@@ -1,9 +1,6 @@
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
 import { FaEdit } from "react-icons/fa";
-import { IoSettingsOutline } from "react-icons/io5";
-import { GoHomeFill } from "react-icons/go";
-import { HiDocumentCheck } from "react-icons/hi2";
-import { RiAdminFill } from "react-icons/ri";
+import { LuLayoutDashboard, LuSettings, LuShieldCheck } from "react-icons/lu";
 
 import {
   GetAllFailEvaluationCountService,
@@ -13,19 +10,14 @@ import {
 } from "../services/overview";
 import { FaLock } from "react-icons/fa";
 import { AiOutlineFundView } from "react-icons/ai";
-import { User } from "../model";
+import { StatusEvaluation, User } from "../model";
 
 export const menusSidebar = ({ user }: { user: User }) => {
   let menus = [
     {
       title: "หน้าหลัก",
       href: "/",
-      icon: GoHomeFill,
-    },
-    {
-      title: "การตั้งค่า",
-      href: "/account/setting",
-      icon: IoSettingsOutline,
+      icon: LuLayoutDashboard,
     },
   ];
 
@@ -33,15 +25,21 @@ export const menusSidebar = ({ user }: { user: User }) => {
     menus.push({
       title: "ผู้ดูแลระบบ",
       href: "/admin",
-      icon: RiAdminFill,
+      icon: LuShieldCheck,
     });
   }
+  menus.push({
+    title: "การตั้งค่า",
+    href: "/account/setting",
+    icon: LuSettings,
+  });
   return menus;
 };
 
 export const statisticMenuCards = (): {
   title: string;
   number: "loading" | number;
+  status: StatusEvaluation | null;
 }[] => {
   const farmer = useQuery({
     queryKey: ["farmer-number"],
@@ -70,19 +68,13 @@ export const statisticMenuCards = (): {
 
   return [
     {
-      title: "จำนวนเกษตรกร",
+      title: "เกษตรกรทั้งหมด",
+      status: null,
       number: farmer.isLoading ? "loading" : farmer.data ? farmer.data : 0,
     },
     {
-      title: "จำนวนผ่านการประเมิน",
-      number: successEvaluation.isLoading
-        ? "loading"
-        : successEvaluation.data
-          ? successEvaluation.data
-          : 0,
-    },
-    {
-      title: "จำนวนรอการประเมิน",
+      title: "รอการประเมิน",
+      status: "pending",
       number: pendingEvaluation.isLoading
         ? "loading"
         : pendingEvaluation.data
@@ -90,7 +82,17 @@ export const statisticMenuCards = (): {
           : 0,
     },
     {
-      title: "จำนวนไม่ผ่านการประเมิน",
+      title: "ผ่านการประเมิน",
+      status: "approved",
+      number: successEvaluation.isLoading
+        ? "loading"
+        : successEvaluation.data
+          ? successEvaluation.data
+          : 0,
+    },
+    {
+      title: "ไม่ผ่านการประเมิน",
+      status: "rejected",
       number: failEvaluation.isLoading
         ? "loading"
         : failEvaluation.data

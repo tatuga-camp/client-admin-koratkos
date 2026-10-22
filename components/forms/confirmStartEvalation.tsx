@@ -1,10 +1,9 @@
 import React from "react";
 import { FormEvaluation } from "../../model";
-import { Form } from "react-aria-components";
 import CreateFormEvaluation from "./createFormEvaluation";
-import UpdateFormEvaluation from "./updateFormEvaluation";
 import { UseQueryResult } from "@tanstack/react-query";
 import { ResponseGetFormEvaluationsService } from "../../services/evaluation";
+import StatusBadge from "../ui/StatusBadge";
 
 type ConfirmStartEvalationProps = {
   selectFormEvaluation: FormEvaluation;
@@ -15,10 +14,13 @@ function ConfirmStartEvalation({
   formEvaluations,
 }: ConfirmStartEvalationProps) {
   return (
-    <div className="mt-5 flex w-full flex-col items-center justify-start gap-5 font-Anuphan">
-      <header className="w-11/12 rounded-lg bg-fifth-color px-3 py-1 text-left text-xl font-semibold text-white ">
-        เริ่มการประเมิน
-      </header>
+    <section aria-labelledby="start-evaluation-title" className="card">
+      <div className="card-header">
+        <h3 id="start-evaluation-title" className="card-title">
+          เริ่มการประเมิน
+        </h3>
+        <StatusBadge status={null} label="ยังไม่เริ่มประเมิน" />
+      </div>
 
       {!selectFormEvaluation.id && (
         <CreateFormEvaluation
@@ -26,7 +28,7 @@ function ConfirmStartEvalation({
           selectFormEvaluation={selectFormEvaluation}
         />
       )}
-    </div>
+    </section>
   );
 }
 

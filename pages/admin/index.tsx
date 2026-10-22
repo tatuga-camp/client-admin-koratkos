@@ -10,6 +10,7 @@ import TableUsers from "../../components/tables/tableUsers";
 import Head from "next/head";
 import TableUserCreateKey from "../../components/tables/tableUserCreateKey";
 import { GetAllUserCreateKeyService } from "../../services/userCreateKey";
+import PageHeader from "../../components/ui/PageHeader";
 
 function Index({ userServer }: { userServer: User }) {
   const users = useQuery({
@@ -26,11 +27,41 @@ function Index({ userServer }: { userServer: User }) {
   return (
     <DashboardLayout user={userServer}>
       <Head>
-        <title>Admin Dashboard</title>
+        <title>ผู้ดูแลระบบ | Korat KOS</title>
       </Head>
-      <div className="mt-10 flex w-full flex-col items-center justify-start gap-5 xl:w-[58rem] 2xl:w-[65rem] ">
-        <TableUserCreateKey userCreateKeys={userCreateKeys} />
-        <TableUsers users={users} />
+      <div className="flex flex-col gap-6">
+        <PageHeader
+          title="ผู้ดูแลระบบ"
+          description="จัดการรหัสสำหรับลงทะเบียนและบัญชีผู้ประเมินในระบบ"
+        />
+
+        <section aria-labelledby="user-create-keys-title" className="card">
+          <div className="card-header">
+            <div className="min-w-0">
+              <h2 id="user-create-keys-title" className="card-title">
+                รหัสสำหรับลงทะเบียน
+              </h2>
+              <p className="text-sm text-super-main-color/80">
+                ส่งรหัสให้ผู้ประเมินใช้ตอนลงทะเบียน รหัสจะกำหนดหน้าที่และหน่วยงานของบัญชี
+              </p>
+            </div>
+          </div>
+          <TableUserCreateKey userCreateKeys={userCreateKeys} />
+        </section>
+
+        <section aria-labelledby="users-title" className="card">
+          <div className="card-header">
+            <div className="min-w-0">
+              <h2 id="users-title" className="card-title">
+                บัญชีผู้ประเมิน
+              </h2>
+              <p className="text-sm text-super-main-color/80">
+                ปิดหรือเปิดการใช้งานบัญชี และเข้าสู่ระบบแทนผู้ประเมินเพื่อตรวจสอบปัญหา
+              </p>
+            </div>
+          </div>
+          <TableUsers users={users} />
+        </section>
       </div>
     </DashboardLayout>
   );

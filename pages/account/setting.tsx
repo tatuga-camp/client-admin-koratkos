@@ -1,6 +1,8 @@
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
+import Head from "next/head";
 import { parseCookies } from "nookies";
 import React, { useState } from "react";
+import { LuShieldCheck, LuUserCog } from "react-icons/lu";
 import { GetUserService } from "../../services/user";
 import DashboardLayout from "../../layouts/dashboardLayout";
 import { User } from "../../model";
@@ -8,6 +10,10 @@ import { useQuery } from "@tanstack/react-query";
 import { menuAccountSetting } from "../../data/menus";
 import GeneralData from "../../components/accounts/generalData";
 import SecurityData from "../../components/accounts/securityData";
+import PageHeader from "../../components/ui/PageHeader";
+
+// Lucide icons for the menu entries, in the same order as menuAccountSetting.
+const menuIcons = [LuUserCog, LuShieldCheck];
 
 function Setting({ userServer }: { userServer: User }) {
   const [selectMenu, setSelectMenu] = useState<number>(0);
@@ -18,31 +24,37 @@ function Setting({ userServer }: { userServer: User }) {
   });
   return (
     <DashboardLayout user={user.data}>
-      <div className="mt-20 flex w-full flex-col items-center font-Anuphan">
-        <header className="flex w-11/12 justify-start border-b-4 border-[#C6A969] pb-5">
-          <h1 className="text-4xl font-extrabold text-super-main-color">
-            ตั้งค่าบัญชีผู้ใช้
-          </h1>
-        </header>
-        <main className="mt-5 flex w-11/12 flex-col gap-10">
-          <nav className="flex items-center justify-start gap-5">
+      <Head>
+        <title>ตั้งค่าบัญชีผู้ใช้ | Korat KOS</title>
+      </Head>
+      <div className="flex flex-col gap-6">
+        <PageHeader
+          title="ตั้งค่าบัญชีผู้ใช้"
+          description="แก้ไขข้อมูลส่วนตัว รูปโปรไฟล์ และรหัสผ่านสำหรับเข้าสู่ระบบ"
+        />
+
+        <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <div className="segmented" role="group" aria-label="หมวดการตั้งค่า">
             {menuAccountSetting().map((menu, index) => {
+              const Icon = menuIcons[index] ?? menu.icon;
               return (
                 <button
-                  key={index}
+                  type="button"
+                  key={menu.title}
                   onClick={() => setSelectMenu(() => index)}
-                  className={`flex w-max items-center justify-center gap-2 rounded-xl transition
-                    duration-100 hover:scale-105 active:scale-110
-                 ${selectMenu === index ? "bg-[#C6A969]" : "bg-gray-400"} px-4 py-1 text-lg font-semibold text-white`}
+                  aria-pressed={selectMenu === index}
+                  className="segmented-item"
                 >
-                  <menu.icon /> {menu.title}
+                  <Icon aria-hidden="true" className="size-4" />
+                  {menu.title}
                 </button>
               );
             })}
-          </nav>
-          {selectMenu === 0 && <GeneralData user={user} />}
-          {selectMenu === 1 && <SecurityData user={user} />}
-        </main>
+          </div>
+        </div>
+
+        {selectMenu === 0 && <GeneralData user={user} />}
+        {selectMenu === 1 && <SecurityData user={user} />}
       </div>
     </DashboardLayout>
   );
