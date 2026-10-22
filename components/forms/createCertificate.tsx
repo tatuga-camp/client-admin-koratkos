@@ -1,17 +1,16 @@
-import { Calendar } from "primereact/calendar";
 import React, { useState } from "react";
 import {
   Button,
+  FieldError,
   FileTrigger,
   Form,
   Input,
   Label,
   TextField,
 } from "react-aria-components";
-import { CiImageOn } from "react-icons/ci";
+import { LuImagePlus, LuLoader2 } from "react-icons/lu";
 
 import Swal from "sweetalert2";
-import { useDeviceType } from "../../utils";
 import {
   CreateCertificateService,
   ResponseGetAllCertificateService,
@@ -20,6 +19,8 @@ import moment from "moment";
 import { useRouter } from "next/router";
 import { UseQueryResult } from "@tanstack/react-query";
 import Image from "next/image";
+import DateInput from "../ui/DateInput";
+import Modal from "../ui/Modal";
 
 type CreateCertificateProps = {
   setTriggerCreateCertificate: React.Dispatch<React.SetStateAction<boolean>>;
@@ -30,7 +31,6 @@ function CreateCertificate({
   setTriggerCreateCertificate,
   certificates,
 }: CreateCertificateProps) {
-  const deviceType = useDeviceType();
   const router = useRouter();
   const [certificateData, setCertificateData] = useState<{
     certRequestDate?: Date;
@@ -41,19 +41,24 @@ function CreateCertificate({
       url: string;
     };
   }>({ governorName: "นายสยาม ศิริมงคล" });
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [signatureMissing, setSignatureMissing] = useState(false);
+
+  const handleClose = () => {
+    if (submitting) return;
+    setTriggerCreateCertificate(() => false);
+  };
 
   const handleSummitCreateCertificate = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      Swal.fire({
-        title: "กำลังสร้างใบรับรอง",
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
+      setErrorMessage(null);
       if (!certificateData?.governorSignature?.file) {
-        throw new Error("กรุณาเลือกไฟล์");
+        setSignatureMissing(true);
+        return;
       }
+      setSubmitting(true);
       await CreateCertificateService({
         farmerId: router.query.farmerId as string,
         certRequestDate: moment(certificateData?.certRequestDate).toISOString(),
@@ -62,70 +67,103 @@ function CreateCertificate({
         file: certificateData?.governorSignature.file,
       });
       await certificates.refetch();
+      setTriggerCreateCertificate(() => false);
       Swal.fire({
         icon: "success",
         title: "สร้างใบรับรองสำเร็จ",
       });
-      setTriggerCreateCertificate(() => false);
     } catch (error: any) {
-      Swal.fire({
-        icon: "error",
-        title: "เกิดข้อผิดพลาด",
-        text: error.message,
-      });
+      // Shown inside the dialog so the filled-in form is kept.
+      setErrorMessage(
+        error?.message ?? "สร้างใบรับรองไม่สำเร็จ กรุณาลองอีกครั้ง",
+      );
+      setSubmitting(false);
     }
   };
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 top-0 z-50 m-auto flex h-screen w-screen items-center justify-center font-Anuphan">
+    <Modal
+      open
+      onClose={handleClose}
+      size="sm"
+      title="สร้างใบรับรอง"
+      footer={
+        <>
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={submitting}
+            className="btn btn-secondary"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="submit"
+            form="create-certificate-form"
+            disabled={submitting}
+            className="btn btn-primary"
+          >
+            {submitting && (
+              <LuLoader2
+                aria-hidden="true"
+                className="size-4 motion-safe:animate-spin"
+              />
+            )}
+            {submitting ? "กำลังสร้างใบรับรอง" : "สร้างใบรับรอง"}
+          </button>
+        </>
+      }
+    >
       <Form
+        id="create-certificate-form"
         onSubmit={handleSummitCreateCertificate}
-        className="flex h-max w-96 flex-col items-center justify-between gap-3 rounded-lg bg-fourth-color p-5 ring-2 ring-black"
+        className="flex flex-col gap-4"
       >
-        <Label className="text-xl font-semibold text-super-main-color">
-          สร้างใบรับรอง
-        </Label>
-        <TextField isRequired className="flex w-80 flex-col  items-start gap-2">
-          <Label className="text-base font-semibold text-super-main-color">
+        {errorMessage && (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          >
+            {errorMessage}
+          </div>
+        )}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="cert-request-date" className="label">
             วันที่ออกใบรับรอง
-          </Label>
-          <Calendar
+          </label>
+          <DateInput
+            id="cert-request-date"
+            name="certRequestDate"
             value={certificateData?.certRequestDate}
-            onChange={(e) => {
-              setCertificateData((prev: any) => ({
+            onChange={(date) => {
+              setCertificateData((prev) => ({
                 ...prev,
-                certRequestDate: e.value,
+                certRequestDate: date ?? undefined,
               }));
             }}
             required
-            className="w-full"
-            dateFormat="dd/MM/yy"
-            locale="th"
-            touchUI={deviceType === "mobile" ? true : false}
           />
-        </TextField>
-        <TextField isRequired className="flex w-80 flex-col  items-start gap-2">
-          <Label className="text-base font-semibold text-super-main-color">
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="cert-expired-date" className="label">
             วันที่หมดอายุ
-          </Label>
-          <Calendar
+          </label>
+          <DateInput
+            id="cert-expired-date"
+            name="certExpiredDate"
             value={certificateData?.certExpiredDate}
-            onChange={(e) => {
-              setCertificateData((prev: any) => ({
+            min={certificateData?.certRequestDate}
+            onChange={(date) => {
+              setCertificateData((prev) => ({
                 ...prev,
-                certExpiredDate: e.value,
+                certExpiredDate: date ?? undefined,
               }));
             }}
             required
-            className="w-full"
-            dateFormat="dd/MM/yy"
-            locale="th"
-            touchUI={deviceType === "mobile" ? true : false}
           />
-        </TextField>
-        <TextField isRequired className="flex w-80 flex-col  items-start gap-2">
-          <Label className="text-base font-semibold text-super-main-color">
-            ชื่อผู้ว่าราชการจังหวัด
-          </Label>
+        </div>
+        <TextField isRequired className="flex flex-col gap-1.5">
+          <Label className="label">ชื่อผู้ว่าราชการจังหวัด</Label>
           <Input
             type="text"
             value={certificateData?.governorName}
@@ -135,62 +173,63 @@ function CreateCertificate({
                 governorName: e.target.value,
               }));
             }}
-            required
-            className="h-13 w-full rounded-md p-3 ring-1 ring-gray-200"
+            className="input"
           />
+          <FieldError className="field-error" />
         </TextField>
-        {certificateData.governorSignature?.url && (
-          <div className="relative h-40 w-full">
-            <Image
-              src={certificateData.governorSignature?.url}
-              fill
-              alt="governor signature"
-              className="object-contain"
-            />
-          </div>
-        )}
-        <FileTrigger
-          allowsMultiple={false}
-          acceptedFileTypes={[
-            "image/png",
-            "image/jpg",
-            "image/jpeg",
-            "image/gif",
-            "image/bmp",
-            "image/webp",
-          ]}
-          onSelect={(e) => {
-            if (!e) return null;
-            const file = e[0];
-            const url = URL.createObjectURL(file);
-            setCertificateData((prev: any) => ({
-              ...prev,
-              governorSignature: { file, url },
-            }));
-          }}
-        >
-          <div className="w-80">
+        <div className="flex flex-col gap-1.5">
+          <span className="label">ลายเซ็นผู้ว่าราชการจังหวัด</span>
+          {certificateData.governorSignature?.url && (
+            <div className="relative h-32 w-full overflow-hidden rounded-lg border border-third-color bg-fourth-color">
+              <Image
+                src={certificateData.governorSignature?.url}
+                fill
+                alt="ตัวอย่างลายเซ็นผู้ว่าราชการจังหวัด"
+                className="object-contain p-2"
+              />
+            </div>
+          )}
+          <FileTrigger
+            allowsMultiple={false}
+            acceptedFileTypes={[
+              "image/png",
+              "image/jpg",
+              "image/jpeg",
+              "image/gif",
+              "image/bmp",
+              "image/webp",
+            ]}
+            onSelect={(e) => {
+              if (!e) return null;
+              const file = e[0];
+              const url = URL.createObjectURL(file);
+              setSignatureMissing(false);
+              setCertificateData((prev: any) => ({
+                ...prev,
+                governorSignature: { file, url },
+              }));
+            }}
+          >
             <Button
-              className=" duration-100justify-center flex  items-center gap-2 rounded-lg bg-third-color px-4 py-1 font-semibold text-white 
-          transition hover:bg-super-main-color"
+              aria-describedby={
+                signatureMissing ? "governor-signature-error" : undefined
+              }
+              className="btn btn-secondary w-full sm:w-max"
             >
-              <CiImageOn />
-              อัพโหลดลายเซ็น
+              <LuImagePlus aria-hidden="true" className="size-4" />
+              {certificateData.governorSignature
+                ? "เปลี่ยนลายเซ็น"
+                : "อัพโหลดลายเซ็น"}
             </Button>
-          </div>
-        </FileTrigger>
-        <Button
-          type="submit"
-          className="button-focus flex items-center justify-center gap-2 rounded-lg bg-fifth-color px-5 py-1 text-xl font-bold text-white"
-        >
-          ตกลง
-        </Button>
+          </FileTrigger>
+          {signatureMissing && (
+            <p id="governor-signature-error" className="field-error">
+              กรุณาอัพโหลดลายเซ็น
+            </p>
+          )}
+        </div>
       </Form>
-      <footer
-        onClick={() => setTriggerCreateCertificate(() => false)}
-        className="fixed bottom-0 left-0 right-0 top-0 -z-10 m-auto h-screen w-screen bg-white/10 backdrop-blur-md"
-      ></footer>
-    </div>
+    </Modal>
   );
 }
 

@@ -1,40 +1,114 @@
 import React, { useState } from "react";
 import {
-  Button,
   FieldError,
   Form,
   Input,
   Label,
+  Text,
   TextField,
 } from "react-aria-components";
-import { IoIosCloseCircleOutline } from "react-icons/io";
+import { LuEye, LuEyeOff, LuLoader2 } from "react-icons/lu";
 import Swal from "sweetalert2";
 import { UpdatePasswordUserService } from "../../services/user";
+import Modal from "../ui/Modal";
 
 type ChangePasswordProps = {
   setTriggerChangePassword: React.Dispatch<React.SetStateAction<boolean>>;
 };
+
+type PasswordFieldProps = {
+  name: "currentPassword" | "newPassword" | "confirmNewPassword";
+  label: string;
+  value: string;
+  autoComplete: "current-password" | "new-password";
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  description?: string;
+  minLength?: number;
+  maxLength?: number;
+  validate?: (value: string) => string | null;
+  autoFocus?: boolean;
+};
+
+function PasswordField({
+  name,
+  label,
+  value,
+  autoComplete,
+  onChange,
+  description,
+  minLength,
+  maxLength,
+  validate,
+  autoFocus,
+}: PasswordFieldProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  return (
+    <TextField
+      name={name}
+      type={showPassword ? "text" : "password"}
+      isRequired
+      validate={validate}
+      className="flex flex-col gap-1.5"
+    >
+      <Label className="label">{label}</Label>
+      <div className="relative">
+        <Input
+          onChange={onChange}
+          value={value}
+          minLength={minLength}
+          maxLength={maxLength}
+          autoComplete={autoComplete}
+          autoFocus={autoFocus}
+          className="input pr-11"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword((prev) => !prev)}
+          aria-label={showPassword ? `ซ่อน${label}` : `แสดง${label}`}
+          aria-pressed={showPassword}
+          className="btn btn-ghost btn-sm absolute right-1 top-1 w-8 px-0"
+        >
+          {showPassword ? (
+            <LuEyeOff aria-hidden="true" className="size-4" />
+          ) : (
+            <LuEye aria-hidden="true" className="size-4" />
+          )}
+        </button>
+      </div>
+      {description && (
+        <Text slot="description" className="text-xs text-super-main-color/80">
+          {description}
+        </Text>
+      )}
+      <FieldError className="field-error" />
+    </TextField>
+  );
+}
+
 function ChangePassword({ setTriggerChangePassword }: ChangePasswordProps) {
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmNewPassword: "",
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleChangePasswordData = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleClose = () => {
+    if (submitting) return;
+    setTriggerChangePassword(() => false);
+  };
+
   const handleSummitUpdatePassword = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      Swal.fire({
-        title: "กำลังเปลี่ยนรหัสผ่าน",
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
+      setErrorMessage(null);
+      setSubmitting(true);
 
       if (passwordData.newPassword !== passwordData.confirmNewPassword) {
         throw new Error("รหัสผ่านใหม่ไม่ตรงกัน");
@@ -50,96 +124,91 @@ function ChangePassword({ setTriggerChangePassword }: ChangePasswordProps) {
         title: "เปลี่ยนรหัสผ่านสำเร็จ",
       });
     } catch (error: any) {
-      Swal.fire({
-        icon: "error",
-        title: "เกิดข้อผิดพลาด",
-        text: error.message,
-      });
+      // Shown inside the dialog: a Swal popup would count as an outside
+      // click and close the dialog, losing what was typed.
+      setErrorMessage(error?.message ?? "เปลี่ยนรหัสผ่านไม่สำเร็จ กรุณาลองอีกครั้ง");
+      setSubmitting(false);
     }
   };
+
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 top-0 z-50 m-auto
-    flex h-screen w-screen items-center justify-center"
+    <Modal
+      open
+      onClose={handleClose}
+      size="sm"
+      title="เปลี่ยนรหัสผ่าน"
+      description="กรอกรหัสผ่านเดิม แล้วตั้งรหัสผ่านใหม่ 8–16 ตัวอักษร"
+      footer={
+        <>
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={submitting}
+            className="btn btn-secondary"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="submit"
+            form="change-password-form"
+            disabled={submitting}
+            className="btn btn-primary"
+          >
+            {submitting && (
+              <LuLoader2 aria-hidden="true" className="size-4 motion-safe:animate-spin" />
+            )}
+            {submitting ? "กำลังเปลี่ยนรหัสผ่าน" : "เปลี่ยนรหัสผ่าน"}
+          </button>
+        </>
+      }
     >
       <Form
+        id="change-password-form"
         onSubmit={handleSummitUpdatePassword}
-        className="relative flex h-max w-96 flex-col items-center justify-center gap-3 rounded-lg bg-[#C6A969] p-5"
+        className="flex flex-col gap-4"
       >
-        <button
-          onClick={() => {
-            document.body.style.overflow = "auto";
-            setTriggerChangePassword(() => false);
-          }}
-          className="absolute right-4 top-4 m-auto flex items-center justify-center text-2xl text-white"
-        >
-          <IoIosCloseCircleOutline />
-        </button>
-        <Label className="text-xl font-bold text-fourth-color">
-          เปลี่ยนรหัสผ่าน
-        </Label>
-        <TextField isRequired className="flex w-80 flex-col gap-2">
-          <Label className="text-lg font-semibold text-super-main-color">
-            รหัสผ่านเดิม
-          </Label>
-          <Input
-            required
-            type="password"
-            name="currentPassword"
-            onChange={handleChangePasswordData}
-            value={passwordData.currentPassword}
-            className="h-10 w-full rounded-lg p-3 ring-1 ring-super-main-color"
-          />
-          <FieldError className="text-xs text-white" />
-        </TextField>
-        <TextField isRequired className="flex w-80 flex-col gap-2">
-          <Label className="text-lg font-semibold text-super-main-color">
-            รหัสผ่านใหม่
-          </Label>
-          <Input
-            required
-            minLength={8}
-            maxLength={16}
-            name="newPassword"
-            onChange={handleChangePasswordData}
-            value={passwordData.newPassword}
-            type="password"
-            className="h-10 w-full rounded-lg p-3 ring-1 ring-super-main-color"
-          />
-          <FieldError className="text-xs text-white" />
-        </TextField>
-        <TextField isRequired className="flex w-80 flex-col gap-2">
-          <Label className="text-lg font-semibold text-super-main-color">
-            ยืนยันรหัสผ่านเใหม่
-          </Label>
-          <Input
-            minLength={8}
-            maxLength={16}
-            required
-            name="confirmNewPassword"
-            onChange={handleChangePasswordData}
-            value={passwordData.confirmNewPassword}
-            type="password"
-            className="h-10 w-full rounded-lg p-3 ring-1 ring-super-main-color"
-          />
-          <FieldError className="line-clamp-2 text-xs text-white" />
-        </TextField>
-        <Button
-          type="submit"
-          className="w-40 rounded-lg bg-super-main-color py-2 text-lg font-semibold
-         text-white drop-shadow-lg transition duration-100 hover:scale-105 active:scale-110"
-        >
-          ยืนยัน
-        </Button>
+        {errorMessage && (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          >
+            {errorMessage}
+          </div>
+        )}
+        <PasswordField
+          name="currentPassword"
+          label="รหัสผ่านเดิม"
+          value={passwordData.currentPassword}
+          onChange={handleChangePasswordData}
+          autoComplete="current-password"
+          autoFocus
+        />
+        <PasswordField
+          name="newPassword"
+          label="รหัสผ่านใหม่"
+          value={passwordData.newPassword}
+          onChange={handleChangePasswordData}
+          autoComplete="new-password"
+          minLength={8}
+          maxLength={16}
+          description="8–16 ตัวอักษร"
+        />
+        <PasswordField
+          name="confirmNewPassword"
+          label="ยืนยันรหัสผ่านใหม่"
+          value={passwordData.confirmNewPassword}
+          onChange={handleChangePasswordData}
+          autoComplete="new-password"
+          minLength={8}
+          maxLength={16}
+          validate={(value) =>
+            value && value !== passwordData.newPassword
+              ? "รหัสผ่านใหม่ไม่ตรงกัน"
+              : null
+          }
+        />
       </Form>
-      <footer
-        onClick={() => {
-          document.body.style.overflow = "auto";
-          setTriggerChangePassword(() => false);
-        }}
-        className=" fixed bottom-0 left-0 right-0 top-0 -z-10 m-auto h-screen w-screen bg-white/20 backdrop-blur-sm "
-      ></footer>
-    </div>
+    </Modal>
   );
 }
 

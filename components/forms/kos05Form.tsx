@@ -1,96 +1,97 @@
 import { UseQueryResult } from "@tanstack/react-query";
 import moment from "moment";
-import { Calendar } from "primereact/calendar";
-import { Input, Label, TextField } from "react-aria-components";
+import { LuInbox } from "react-icons/lu";
 import { ResponseGetFarmerKos05Service } from "../../services/farmer";
-import PlantCombox from "../combox/plantCombox";
-import TypeAmountCombox from "../combox/typeAmountCombox";
 type Kos05FormProps = {
   kos05: UseQueryResult<ResponseGetFarmerKos05Service, Error>;
 };
+
+const formatDate = (date?: string) =>
+  date ? moment(date).locale("th").format("D MMM YYYY") : "-";
+
 function Kos05Form({ kos05 }: Kos05FormProps) {
+  const harvests = kos05.data?.harvests ?? [];
+
+  if (harvests.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-2 py-10 text-center">
+        <LuInbox aria-hidden="true" className="size-10 text-fifth-color" />
+        <p className="font-semibold">ยังไม่มีบันทึกการเก็บเกี่ยว</p>
+      </div>
+    );
+  }
+
   return (
-    <main className="grid h-full w-11/12 grid-cols-2 gap-5 rounded-lg bg-fourth-color p-5 xl:grid-cols-3">
-      {kos05.data?.harvests.map((harvestLog, index) => {
-        const harvestDate = moment(harvestLog.harvestDate)
-          .locale("th")
-          .format("DD/MM/YYYY");
-        return (
-          <section
-            key={index}
-            className="flex h-max w-full flex-col gap-3 rounded-lg  p-2 ring-1 ring-black"
+    <>
+      {/* Tablet and desktop */}
+      <div className="hidden overflow-x-auto rounded-lg border border-third-color md:block">
+        <table className="w-full min-w-[640px] text-left text-sm">
+          <thead className="border-b border-third-color bg-fourth-color/70 text-xs font-semibold text-super-main-color/80">
+            <tr>
+              <th scope="col" className="px-4 py-3">แปลงที่</th>
+              <th scope="col" className="px-3 py-3">วันที่เก็บเกี่ยว</th>
+              <th scope="col" className="px-3 py-3">ชนิดพืชที่เก็บเกี่ยว</th>
+              <th scope="col" className="px-3 py-3 text-right">ปริมาณ</th>
+              <th scope="col" className="px-4 py-3">การตลาด</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-third-color">
+            {harvests.map((harvestLog, index) => (
+              <tr key={harvestLog.id ?? index} className="align-top">
+                <td className="whitespace-nowrap px-4 py-3 tabular-nums">
+                  {harvestLog.plotNumber}
+                </td>
+                <td className="whitespace-nowrap px-3 py-3 tabular-nums">
+                  {formatDate(harvestLog.harvestDate)}
+                </td>
+                <td className="break-words px-3 py-3 font-semibold">
+                  {harvestLog.plantType || "-"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-3 text-right tabular-nums">
+                  {harvestLog.amount?.toLocaleString() ?? "-"} {harvestLog.typeAmount}
+                </td>
+                <td className="break-words px-4 py-3">{harvestLog.marketing || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Phones */}
+      <ul className="flex flex-col gap-3 md:hidden">
+        {harvests.map((harvestLog, index) => (
+          <li
+            key={harvestLog.id ?? index}
+            className="rounded-lg border border-third-color bg-fourth-color/60 p-4"
           >
-            <header className="flex items-center justify-between">
-              <div className="rounded-lg bg-[#502D16] px-4 py-1 text-xl font-semibold text-white">
-                แปลงที่ {harvestLog.plotNumber}
+            <p className="text-xs font-medium text-super-main-color/70">
+              แปลงที่ {harvestLog.plotNumber}
+            </p>
+            <h4 className="break-words font-semibold">
+              {harvestLog.plantType || "-"}
+            </h4>
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+              <div>
+                <dt className="text-xs text-super-main-color/70">วันที่เก็บเกี่ยว</dt>
+                <dd className="font-medium">{formatDate(harvestLog.harvestDate)}</dd>
               </div>
-            </header>
-            <Label className="mt-10 w-80 rounded-lg bg-third-color  py-2 text-center text-lg font-bold text-black">
-              เพิ่มบันทึกการเก็บเกี่ยว
-            </Label>
-            <TextField className="flex w-80  flex-col items-center justify-start">
-              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
-                แปลงที่ :
-              </Label>
-              <Input
-                required
-                type="number"
-                name="plotNumber"
-                value={harvestLog?.plotNumber}
-                inputMode="numeric"
-                className="w-full rounded-lg p-3 ring-1 ring-gray-300"
-              />
-            </TextField>
-            <TextField className="flex w-80 flex-col  items-start justify-start gap-2 ">
-              <Label className="w-max text-xl font-semibold text-super-main-color">
-                วันที่เก็บเกี่ยว :
-              </Label>
-              <Calendar
-                required
-                className="w-full"
-                dateFormat="dd/MM/yy"
-                value={
-                  harvestLog?.harvestDate
-                    ? new Date(harvestLog?.harvestDate)
-                    : null
-                }
-                locale="th"
-                disabled
-              />
-            </TextField>
-            <PlantCombox harvestLog={harvestLog} />
-            <TextField className="flex w-80  flex-col items-center justify-start">
-              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
-                ปริมาณ :
-              </Label>
-              <div className="flex w-full items-start justify-center gap-2">
-                <Input
-                  required
-                  name="amount"
-                  value={harvestLog?.amount}
-                  type="number"
-                  inputMode="numeric"
-                  className="w-full rounded-lg p-3 ring-1 ring-gray-300"
-                />
-                <TypeAmountCombox factor={harvestLog} />
+              <div>
+                <dt className="text-xs text-super-main-color/70">ปริมาณ</dt>
+                <dd className="font-medium">
+                  {harvestLog.amount?.toLocaleString() ?? "-"} {harvestLog.typeAmount}
+                </dd>
               </div>
-            </TextField>
-            <TextField className="flex w-80  flex-col items-center justify-start">
-              <Label className="w-full text-left text-xl font-semibold text-super-main-color">
-                การตลาด :
-              </Label>
-              <Input
-                required
-                name="marketing"
-                value={harvestLog?.marketing}
-                type="text"
-                className="w-full rounded-lg p-3 ring-1 ring-gray-300"
-              />
-            </TextField>
-          </section>
-        );
-      })}
-    </main>
+              <div className="col-span-2">
+                <dt className="text-xs text-super-main-color/70">การตลาด</dt>
+                <dd className="break-words font-medium">
+                  {harvestLog.marketing || "-"}
+                </dd>
+              </div>
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

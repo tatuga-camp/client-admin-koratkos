@@ -8,9 +8,8 @@ import {
   Label,
   TextField,
 } from "react-aria-components";
-import { AiFillPicture } from "react-icons/ai";
+import { LuCamera, LuLoader2 } from "react-icons/lu";
 import Image from "next/image";
-import { InputMask, InputMaskChangeEvent } from "primereact/inputmask";
 import { DefinedUseQueryResult } from "@tanstack/react-query";
 import {
   UpdateUserService,
@@ -32,12 +31,23 @@ type UserData = {
     url: string;
   };
 };
+
+/** Formats up to 10 digits as 999-999-9999 while typing. */
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, "").slice(0, 10);
+  return [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6)]
+    .filter(Boolean)
+    .join("-");
+};
+
 function GeneralData({ user }: GernerralDataProps) {
   const [loadingUpload, setLoadingUpload] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData>({
     firstName: user.data.firstName,
     lastName: user.data.lastName,
-    phoneNumber: user.data.phone,
+    phoneNumber: formatPhone(user.data.phone ?? ""),
     organization: user.data.organization,
     picture: {
       file: null,
@@ -45,16 +55,18 @@ function GeneralData({ user }: GernerralDataProps) {
     },
   });
 
-  const handleChangeUserData = (
-    e: InputMaskChangeEvent | React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleChangeUserData = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setUserData((prev) => ({ ...prev, [name]: value }));
+    setUserData((prev) => ({
+      ...prev,
+      [name]: name === "phoneNumber" ? formatPhone(value) : value,
+    }));
   };
 
   const handleUploadProfile = async ({ e }: { e: FileList | null }) => {
     try {
       if (!e) return;
+      setUploadError(null);
       setLoadingUpload(() => true);
       setUserData((prev) => {
         const file = e[0];
@@ -72,6 +84,12 @@ function GeneralData({ user }: GernerralDataProps) {
       setLoadingUpload(() => false);
     } catch (error) {
       setLoadingUpload(() => false);
+      // Show the saved picture again rather than a preview that never uploaded.
+      setUserData((prev) => ({
+        ...prev,
+        picture: { file: null, url: user.data.picture },
+      }));
+      setUploadError("อัปโหลดรูปไม่สำเร็จ กรุณาลองอีกครั้ง");
       console.log(error);
     }
   };
@@ -79,12 +97,7 @@ function GeneralData({ user }: GernerralDataProps) {
   const handleSummitUpdateUser = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      Swal.fire({
-        title: "กำลังบันทึกข้อมูล",
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
+      setSubmitting(true);
 
       const update = await UpdateUserService({
         firstName: userData.firstName,
@@ -93,12 +106,14 @@ function GeneralData({ user }: GernerralDataProps) {
         organization: userData.organization,
       });
       await user.refetch();
+      setSubmitting(false);
       Swal.fire({
         title: "บันทึกข้อมูลสำเร็จ",
         icon: "success",
         confirmButtonText: "ตกลง",
       });
     } catch (error: any) {
+      setSubmitting(false);
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
         text: error.message,
@@ -107,151 +122,165 @@ function GeneralData({ user }: GernerralDataProps) {
       });
     }
   };
+
+  const organizationTitle =
+    organizationLists.find((org) => org.value === userData.organization)
+      ?.title ?? "";
+  const area =
+    user.data.organization === "argiculturalAmphure"
+      ? { label: "อำเภอ", value: user.data.amphure }
+      : user.data.organization === "argiculturalTambon"
+        ? { label: "ตำบล", value: user.data.tambon }
+        : null;
+
   return (
-    <Form
-      onSubmit={handleSummitUpdateUser}
-      className="flex flex-col items-center justify-center gap-5"
-    >
-      <div className="flex h-96 w-full justify-center gap-2 rounded-lg bg-fourth-color p-5 font-Anuphan">
-        <div className="flex w-4/12 flex-col items-center justify-between gap-2">
-          <h2 className="text-2xl font-semibold text-[#C6A969]">รูปโปรไฟล์</h2>
-          <div className="relative h-40 w-40 overflow-hidden rounded-full ring-2 ring-super-main-color ">
-            {loadingUpload ? (
-              <div className="h-60 w-60 animate-pulse bg-gray-300"></div>
-            ) : (
+    <div className="grid items-start gap-6 xl:grid-cols-3">
+      <section aria-labelledby="profile-picture-title" className="card">
+        <div className="card-header">
+          <h2 id="profile-picture-title" className="card-title">
+            รูปโปรไฟล์
+          </h2>
+        </div>
+        <div className="flex flex-col items-center gap-4 p-4 text-center sm:flex-row sm:p-5 sm:text-left xl:flex-col xl:text-center">
+          <div className="relative size-24 shrink-0 overflow-hidden rounded-full bg-third-color ring-4 ring-third-color/60">
+            {userData.picture.url && (
               <Image
-                alt="user profile"
+                alt="รูปโปรไฟล์ของคุณ"
                 src={userData.picture.url}
                 fill
-                className="object-cover"
+                sizes="96px"
+                className={`object-cover transition-opacity ${loadingUpload ? "opacity-50" : ""}`}
               />
             )}
+            {loadingUpload && (
+              <span className="absolute inset-0 flex items-center justify-center">
+                <LuLoader2
+                  aria-hidden="true"
+                  className="size-6 text-super-main-color motion-safe:animate-spin"
+                />
+              </span>
+            )}
           </div>
-          <FileTrigger
-            acceptedFileTypes={[
-              "image/png",
-              "image/jpg",
-              "image/jpeg",
-              "image/gif",
-              "image/bmp",
-              "image/webp",
-            ]}
-            onSelect={(e) => handleUploadProfile({ e })}
-            allowsMultiple={false}
-          >
-            <Button
-              className="flex items-center justify-center gap-2 rounded-xl bg-[#C6A969] px-5
-             py-1 text-xl font-semibold
-           text-white drop-shadow-md transition duration-100 hover:scale-105 active:scale-110 "
+          <div className="flex min-w-0 flex-col items-center gap-2 sm:items-start xl:items-center">
+            <FileTrigger
+              acceptedFileTypes={[
+                "image/png",
+                "image/jpg",
+                "image/jpeg",
+                "image/gif",
+                "image/bmp",
+                "image/webp",
+              ]}
+              onSelect={(e) => handleUploadProfile({ e })}
+              allowsMultiple={false}
             >
-              <AiFillPicture />
-              อัพโหลดรูป
-            </Button>
-          </FileTrigger>
+              <Button isDisabled={loadingUpload} className="btn btn-secondary">
+                <LuCamera aria-hidden="true" className="size-4" />
+                เปลี่ยนรูปโปรไฟล์
+              </Button>
+            </FileTrigger>
+            <p className="text-xs text-super-main-color/80">
+              ไฟล์ PNG, JPG, GIF, BMP หรือ WEBP รูปจะบันทึกทันทีหลังเลือกไฟล์
+            </p>
+            <p aria-live="polite" className="text-xs">
+              {loadingUpload && "กำลังอัปโหลดรูป…"}
+              {uploadError && <span className="field-error">{uploadError}</span>}
+            </p>
+          </div>
         </div>
-        <div className="max flex flex-col items-start justify-between gap-2">
-          <h2 className="text-2xl font-semibold text-[#C6A969]">
-            ข้อมูลทั่วไป
-          </h2>
-          <TextField className="flex w-full items-center justify-start gap-2">
-            <Label className="text-xl font-semibold text-super-main-color">
-              ชื่อจริง :{" "}
-            </Label>
+      </section>
+
+      <Form
+        onSubmit={handleSummitUpdateUser}
+        aria-labelledby="general-data-title"
+        className="card xl:col-span-2"
+      >
+        <div className="card-header">
+          <div className="min-w-0">
+            <h2 id="general-data-title" className="card-title">
+              ข้อมูลทั่วไป
+            </h2>
+            <p className="text-sm text-super-main-color/80">
+              ชื่อและเบอร์โทรศัพท์ที่ใช้ติดต่อในระบบ
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5">
+          <TextField className="flex flex-col gap-1.5">
+            <Label className="label">ชื่อจริง</Label>
             <Input
               name="firstName"
               onChange={handleChangeUserData}
               value={userData.firstName}
-              className="w-60 rounded-lg bg-white p-2 ring-1 ring-super-main-color"
+              autoComplete="given-name"
+              className="input"
             />
           </TextField>
-          <TextField className="flex w-full items-center justify-start gap-2">
-            <Label className="text-xl font-semibold text-super-main-color">
-              นามสกุล :{" "}
-            </Label>
+          <TextField className="flex flex-col gap-1.5">
+            <Label className="label">นามสกุล</Label>
             <Input
               name="lastName"
               onChange={handleChangeUserData}
               value={userData.lastName}
-              className="w-60 rounded-lg bg-white p-2 ring-1 ring-super-main-color"
+              autoComplete="family-name"
+              className="input"
             />
           </TextField>
-          <TextField className="flex w-full items-center justify-start gap-2">
-            <Label className="text-xl font-semibold text-super-main-color">
-              หมายเลขโทรศัพท์ :{" "}
-            </Label>
-            <InputMask
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="account-phone" className="label">
+              หมายเลขโทรศัพท์
+            </label>
+            <input
+              id="account-phone"
+              type="tel"
               required
               name="phoneNumber"
               onChange={handleChangeUserData}
               value={userData.phoneNumber}
-              className="w-60 rounded-lg bg-white p-2 ring-1 ring-super-main-color"
-              mask="999-999-9999"
-              placeholder="999-999-9999"
+              autoComplete="tel"
+              inputMode="numeric"
+              pattern="\d{3}-\d{3}-\d{4}"
+              title="กรอกหมายเลขโทรศัพท์ 10 หลัก"
+              className="input"
+              placeholder="081-234-5678"
             />
-          </TextField>
-          <div className="flex gap-5">
-            <TextField
-              isDisabled
-              className="flex w-full flex-col items-start justify-center gap-2 "
-            >
-              <Label className="text-xl font-semibold text-super-main-color">
-                องค์กร/หน่วยงาน :{" "}
-              </Label>
-              <Input
-                disabled
-                onChange={handleChangeUserData}
-                value={
-                  organizationLists.find(
-                    (org) => org.value === userData.organization,
-                  )?.title
-                }
-                className="w-60 select-none rounded-lg bg-white p-2 ring-1 ring-gray-400"
-              />
-            </TextField>
-            {user.data.organization === "argiculturalAmphure" && (
-              <TextField
-                isDisabled
-                className="flex w-full flex-col items-start justify-center gap-2 "
-              >
-                <Label className="text-xl font-semibold text-super-main-color">
-                  อำเภอ
-                </Label>
-                <Input
-                  disabled
-                  onChange={handleChangeUserData}
-                  value={user.data.amphure}
-                  className="w-60 select-none rounded-lg bg-white p-2 ring-1 ring-gray-400"
-                />
-              </TextField>
-            )}
-            {user.data.organization === "argiculturalTambon" && (
-              <TextField
-                isDisabled
-                className="flex w-full flex-col items-start justify-center gap-2 "
-              >
-                <Label className="text-xl font-semibold text-super-main-color">
-                  ตำบล
-                </Label>
-                <Input
-                  disabled
-                  onChange={handleChangeUserData}
-                  value={user.data.tambon}
-                  className="w-60 select-none rounded-lg bg-white p-2 ring-1 ring-gray-400"
-                />
-              </TextField>
-            )}
           </div>
         </div>
-      </div>
-      <Button
-        type="submit"
-        className="rounded-lg bg-super-main-color px-5 py-1 text-xl
-       font-semibold text-white drop-shadow-lg transition duration-100
-       hover:scale-105 active:scale-110"
-      >
-        บันทึก
-      </Button>
-    </Form>
+
+        <div className="grid gap-4 border-t border-third-color p-4 sm:grid-cols-2 sm:p-5">
+          <TextField
+            isDisabled
+            className={`flex flex-col gap-1.5 ${area ? "" : "sm:col-span-2"}`}
+          >
+            <Label className="label">องค์กร/หน่วยงาน</Label>
+            <Input value={organizationTitle} className="input" />
+          </TextField>
+          {area && (
+            <TextField isDisabled className="flex flex-col gap-1.5">
+              <Label className="label">{area.label}</Label>
+              <Input value={area.value ?? ""} className="input" />
+            </TextField>
+          )}
+          <p className="-mt-1 text-xs text-super-main-color/80 sm:col-span-2">
+            หน่วยงานถูกกำหนดตอนลงทะเบียนและแก้ไขเองไม่ได้
+          </p>
+        </div>
+
+        <div className="flex justify-end border-t border-third-color px-4 py-3 sm:px-5">
+          <Button
+            type="submit"
+            isDisabled={submitting}
+            className="btn btn-primary w-full sm:w-auto"
+          >
+            {submitting && (
+              <LuLoader2 aria-hidden="true" className="size-4 motion-safe:animate-spin" />
+            )}
+            {submitting ? "กำลังบันทึก" : "บันทึกการเปลี่ยนแปลง"}
+          </Button>
+        </div>
+      </Form>
+    </div>
   );
 }
 

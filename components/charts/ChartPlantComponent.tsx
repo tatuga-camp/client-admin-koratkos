@@ -1,17 +1,15 @@
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Chart, ChartData, registerables } from "chart.js";
-import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { Amphure, Tambon, User } from "../../model";
-import {
-  GetAllPlantTypeByGroupService,
-  GroupsType,
-} from "../../services/overview";
+import { GetAllPlantTypeByGroupService } from "../../services/overview";
 import {
   GetAllAmphuresByProvinceService,
   GetAllTambonByAmphureService,
 } from "../../services/thai-data";
+import Select from "../ui/Select";
+import { barChartOptions, chartColors, useChartFont } from "./chartTheme";
 
 Chart.register(...registerables);
 
@@ -21,8 +19,10 @@ type ChartProps = {
 const menus = ["จำนวนชนิดพืช", "พื้นที่หน่วยไร่"];
 
 function ChartPlantComponent({ user }: ChartProps) {
+  useChartFont();
   const [selectAumpure, setselectAumpure] = useState<Amphure | null>(null);
   const [selectTambon, setSelectTambon] = useState<Tambon | null>(null);
+  const [selectMenu, setSelectMenu] = useState(0);
   const plantType = useQuery({
     queryKey: [
       "plant-types",
@@ -52,104 +52,87 @@ function ChartPlantComponent({ user }: ChartProps) {
 
     enabled: !!selectAumpure,
   });
-  const [selectMenu, setSelectMenu] = React.useState(0);
-  const [data, setData] = useState<ChartData<"bar">>({
-    labels: plantType.data?.map((group) => group.plant),
-    datasets: [
-      {
-        label: "จำนวนชนิดพืช",
-        data: plantType.data?.map((group) => group._count.plant) ?? [],
-        borderWidth: 1,
-        backgroundColor: "#5C430D",
-        borderColor: "#F1E4C3",
-      },
-    ],
-  });
 
-  const handleChangeData = (index: number) => {
-    if (index === 0) {
-      setData({
-        labels: plantType.data?.map((group) => group.plant),
-        datasets: [
-          {
-            label: "จำนวนชนิดพืช",
-            data: plantType.data?.map((group) => group._count.plant) ?? [],
-            borderWidth: 1,
-            backgroundColor: "#5C430D",
-            borderColor: "#F1E4C3",
-          },
-        ],
-      });
-    } else {
-      setData({
-        labels: plantType.data?.map((group) => group.plant),
-        datasets: [
-          {
-            label: "พื้นที่หน่วยไร่",
-            data: plantType.data?.map((group) => group._sum.raiTotal) ?? [],
-            borderWidth: 1,
-            backgroundColor: "#5C430D",
-            borderColor: "#F1E4C3",
-          },
-        ],
-      });
-    }
-  };
-
-  useEffect(() => {
-    handleChangeData(selectMenu);
-  }, [plantType.data]);
+  const data = useMemo<ChartData<"bar">>(
+    () => ({
+      labels: plantType.data?.map((group) => group.plant) ?? [],
+      datasets: [
+        {
+          label: menus[selectMenu],
+          data:
+            plantType.data?.map((group) =>
+              selectMenu === 0 ? group._count.plant : group._sum.raiTotal,
+            ) ?? [],
+          backgroundColor: chartColors.main,
+          borderRadius: 6,
+          maxBarThickness: 40,
+        },
+      ],
+    }),
+    [plantType.data, selectMenu],
+  );
 
   return (
-    <div className="flex h-max w-full flex-col items-center justify-center rounded-lg bg-fourth-color p-3  font-Anuphan">
-      <h1 className="w-full text-left text-2xl font-extrabold text-[#5C430D]">
-        ชนิดพืชที่ขอการรับรอง
-      </h1>
-      <div className="flex w-full items-center justify-center gap-2">
-        {user.role === "admin" && (
-          <Dropdown
-            placeholder="เลือกอำเภอ"
-            value={selectAumpure}
-            onChange={(e: DropdownChangeEvent) => {
-              setselectAumpure(e.value);
-              setSelectTambon(null);
-            }}
-            options={amphures.data}
-            optionLabel="name_th"
-            className="w-60"
-            loading={amphures.isLoading}
-            showClear
-          />
-        )}
-        {tambons.data && (
-          <Dropdown
-            placeholder="เลือกตำบล"
-            value={selectTambon}
-            loading={tambons.isLoading}
-            onChange={(e: DropdownChangeEvent) => setSelectTambon(e.value)}
-            options={tambons.data}
-            optionLabel="name_th"
-            className="w-60"
-            showClear
-          />
-        )}
-        {menus.map((menu, index) => {
-          return (
+    <section className="card flex min-w-0 flex-col">
+      <div className="card-header">
+        <h2 className="card-title">ชนิดพืชที่ขอการรับรอง</h2>
+        <div className="segmented" role="group" aria-label="เลือกข้อมูลที่แสดง">
+          {menus.map((menu, index) => (
             <button
-              onClick={() => {
-                setSelectMenu(index);
-                handleChangeData(index);
-              }}
-              key={index}
-              className={`${selectMenu === index ? "bg-super-main-color text-white" : "text-super-main-color"} button-focus rounded-lg px-2 py-1  ring-2 ring-super-main-color `}
+              type="button"
+              key={menu}
+              onClick={() => setSelectMenu(index)}
+              aria-pressed={selectMenu === index}
+              className="segmented-item"
             >
               {menu}
             </button>
-          );
-        })}
+          ))}
+        </div>
       </div>
-      <Bar data={data} />
-    </div>
+      {(user.role === "admin" || tambons.data) && (
+        <div className="flex flex-col gap-2 px-4 pt-4 sm:flex-row sm:px-5">
+          {user.role === "admin" && (
+            <Select
+              label="อำเภอ"
+              placeholder="ทุกอำเภอ"
+              value={selectAumpure}
+              onChange={(amphure) => {
+                setselectAumpure(amphure);
+                setSelectTambon(null);
+              }}
+              options={amphures.data}
+              getLabel={(amphure) => amphure.name_th}
+              getKey={(amphure) => amphure.id}
+              className="w-full sm:w-48"
+              loading={amphures.isLoading}
+              clearable
+            />
+          )}
+          {tambons.data && (
+            <Select
+              label="ตำบล"
+              placeholder="ทุกตำบล"
+              value={selectTambon}
+              loading={tambons.isLoading}
+              onChange={setSelectTambon}
+              options={tambons.data}
+              getLabel={(tambon) => tambon.name_th}
+              getKey={(tambon) => tambon.id ?? tambon.name_th}
+              className="w-full sm:w-48"
+              clearable
+            />
+          )}
+        </div>
+      )}
+      <div className="relative h-64 px-2 py-4 sm:h-72 sm:px-4">
+        {plantType.isLoading ? (
+          <div className="h-full w-full animate-pulse rounded-lg bg-fourth-color" />
+        ) : (
+          <Bar data={data} options={barChartOptions} aria-label="กราฟชนิดพืชที่ขอการรับรอง" role="img" />
+        )}
+      </div>
+    </section>
   );
 }
 

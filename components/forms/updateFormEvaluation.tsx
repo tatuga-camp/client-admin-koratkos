@@ -1,28 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
-import { FaFileArrowDown, FaSquarePhone } from "react-icons/fa6";
-import { GrFormView } from "react-icons/gr";
-import {
-  FileOnListFormEvaluation,
-  FormEvaluation,
-  StatusEvaluation,
-} from "../../model";
-
+import { FormEvaluation, StatusEvaluation } from "../../model";
 import moment from "moment";
 import { useRouter } from "next/router";
-import {
-  Button,
-  FileTrigger,
-  Form,
-  Label,
-  Radio,
-  RadioGroup,
-  TextArea,
-  TextField,
-} from "react-aria-components";
-import { BsFileEarmarkCode } from "react-icons/bs";
-import { IoIosCheckbox, IoIosCheckboxOutline, IoMdClose } from "react-icons/io";
-import { MdDelete, MdEmail, MdFileOpen, MdUpload } from "react-icons/md";
+import { Button, Form } from "react-aria-components";
+import { LuAlertCircle, LuSave } from "react-icons/lu";
 import Swal from "sweetalert2";
 import {
   CreateFileOnEvaulationService,
@@ -39,53 +21,38 @@ import {
   UploadSignURLService,
 } from "../../services/google-storage";
 import { GetUserService } from "../../services/user";
-import Image from "next/image";
+import { confirmDestructive } from "../../utils";
+import EvaluationProgress from "./evaluation/EvaluationProgress";
+import EvaluationSkeleton from "./evaluation/EvaluationSkeleton";
+import EvaluationSummary from "./evaluation/EvaluationSummary";
+import TopicSection from "./evaluation/TopicSection";
+import {
+  EvaluationAttachment,
+  EvaluationListItem,
+  EvaluationSummaryData,
+  ListFormEvaluationState,
+} from "./evaluation/types";
 
 type UpdateFormEvaluationProps = {
   selectFormEvaluation: FormEvaluation;
 };
+
+const formatDate = (date?: Date) =>
+  date ? moment(date).locale("th").format("D MMMM YYYY") : undefined;
+
 function UpdateFormEvaluation({
   selectFormEvaluation,
 }: UpdateFormEvaluationProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useQuery({
     queryKey: ["user"],
     queryFn: () => GetUserService({}),
   });
-  const [files, setFiles] = useState<
-    {
-      id?: string;
-      url?: string;
-      type?: string;
-      file?: File;
-    }[]
-  >([]);
-  const [evaluationListData, setEvaluationListData] = useState<
-    {
-      evalTopicKos06Id: string;
-      childEvalTopicKos06Id: string;
-      id: string;
-      title: string;
-      listFormEvaluation: {
-        id?: string;
-        status: StatusEvaluation;
-        suggestion?: string;
-        files?: File[];
-        fileOnListFormEvaluations?: FileOnListFormEvaluation[];
-      };
-    }[]
-  >();
-  const [evaluationData, setEvaluationData] = useState<{
-    id?: string;
-    status?: StatusEvaluation;
-    reason?: string;
-    first_evaluator_name?: string;
-    first_evaluator_position?: string;
-    second_evaluator_name?: string;
-    second_evaluator_position?: string;
-    third_evaluator_name?: string;
-    third_evaluator_position?: string;
-  }>();
+  const [files, setFiles] = useState<EvaluationAttachment[]>([]);
+  const [evaluationListData, setEvaluationListData] =
+    useState<EvaluationListItem[]>();
+  const [evaluationData, setEvaluationData] = useState<EvaluationSummaryData>();
 
   const formEvaluation = useQuery({
     queryKey: ["formEvaluation", selectFormEvaluation.id],
@@ -278,6 +245,15 @@ function UpdateFormEvaluation({
         await Promise.all([updatePromise]);
       }
       await formEvaluation.refetch();
+      // The round picker badges and the farmer's status badge come from other queries.
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["formEvaluations", router.query.farmerId],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["farmer", router.query.farmerId],
+        }),
+      ]);
       Swal.fire({
         icon: "success",
         title: "สำเร็จ",
@@ -300,6 +276,15 @@ function UpdateFormEvaluation({
     fileOnFormEvaluationId: string;
     url: string;
   }) => {
+    // Unsaved files only leave this form; saved ones are deleted on the server.
+    if (fileOnFormEvaluationId) {
+      const confirmed = await confirmDestructive({
+        title: "ลบไฟล์แนบนี้?",
+        text: "ไฟล์จะถูกลบออกจากผลการประเมินทันทีและกู้คืนไม่ได้",
+        confirmText: "ลบไฟล์",
+      });
+      if (!confirmed) return;
+    }
     try {
       Swal.fire({
         title: "กำลังลบ",
@@ -355,564 +340,189 @@ function UpdateFormEvaluation({
     id: string,
     listId: string,
   ) => {
+    const confirmed = await confirmDestructive({
+      title: "ลบไฟล์ของข้อประเมินนี้?",
+      text: "ไฟล์จะถูกลบออกจากระบบทันทีและกู้คืนไม่ได้",
+      confirmText: "ลบไฟล์",
+    });
+    if (!confirmed) return;
+
+    try {
+      // Remove from the list only once the server has deleted it.
+      await DeleteFileOnListEvaluationService({
+        fileOnListFormEvaluationId: id,
+      });
+      setEvaluationListData((prev) => {
+        return prev?.map((list) => {
+          if (list.id === listId) {
+            return {
+              ...list,
+              listFormEvaluation: {
+                ...list.listFormEvaluation,
+                fileOnListFormEvaluations:
+                  list.listFormEvaluation.fileOnListFormEvaluations?.filter(
+                    (file) => file.id !== id,
+                  ),
+              },
+            };
+          }
+
+          return list;
+        });
+      });
+    } catch (error: any) {
+      Swal.fire({
+        icon: "error",
+        title: "ลบไฟล์ไม่สำเร็จ",
+        text: error?.message,
+      });
+    }
+  };
+
+  const updateListFormEvaluation = (
+    id: string,
+    update: (
+      current: ListFormEvaluationState,
+    ) => Partial<ListFormEvaluationState>,
+  ) => {
     setEvaluationListData((prev) => {
-      return prev?.map((list) => {
-        if (list.id === listId) {
+      return prev?.map((item) => {
+        if (item.id === id) {
           return {
-            ...list,
+            ...item,
             listFormEvaluation: {
-              ...list.listFormEvaluation,
-              fileOnListFormEvaluations:
-                list.listFormEvaluation.fileOnListFormEvaluations?.filter(
-                  (file) => file.id !== id,
-                ),
+              ...item.listFormEvaluation,
+              ...update(item.listFormEvaluation),
             },
           };
         }
-
-        return list;
+        return item;
       });
-    });
-
-    await DeleteFileOnListEvaluationService({
-      fileOnListFormEvaluationId: id,
     });
   };
 
+  const handleAddFiles = (e: FileList | null) => {
+    if (!e) return null;
+    const files: FileList = e;
+    Array.from(files).forEach((file) => {
+      const url = URL.createObjectURL(file);
+      const reader = new FileReader();
+      setFiles((prev) => {
+        if (!prev) return [{ file, url: url }];
+        return [...prev, { file, url: url, type: file.type }];
+      });
+      reader.readAsDataURL(file);
+    });
+  };
+
+  if (formEvaluation.isLoading) {
+    return <EvaluationSkeleton />;
+  }
+
+  if (formEvaluation.isError) {
+    return (
+      <div className="card flex flex-col items-center gap-3 px-4 py-10 text-center">
+        <LuAlertCircle aria-hidden="true" className="size-10 text-red-600" />
+        <p className="font-semibold">โหลดแบบประเมินไม่สำเร็จ</p>
+        <button
+          type="button"
+          onClick={() => formEvaluation.refetch()}
+          className="btn btn-secondary"
+        >
+          ลองอีกครั้ง
+        </button>
+      </div>
+    );
+  }
+
+  const criteria = evaluationListData ?? [];
+  const listFormEvaluationOf = (childId: string) =>
+    criteria.find((item) => item.id === childId)?.listFormEvaluation;
+  const approvedCount = criteria.filter(
+    (item) => item.listFormEvaluation.status === "approved",
+  ).length;
+  const rejectedCount = criteria.filter(
+    (item) => item.listFormEvaluation.status === "rejected",
+  ).length;
+  const answeredCount = approvedCount + rejectedCount;
+  const detail = formEvaluation.data?.formEvaluation;
+
   return (
-    <Form
-      onSubmit={handleSummitEvaluation}
-      className="mt-5 flex w-full flex-col items-center"
-    >
-      <header className="sticky top-0 z-20 grid w-11/12 grid-cols-10 items-center justify-center gap-2  text-xl font-semibold text-white ">
-        <div className=" col-span-6 rounded-lg bg-fifth-color px-3 py-1 text-center">
-          รายการการประเมิน
+    <Form onSubmit={handleSummitEvaluation} className="flex flex-col gap-6">
+      <EvaluationProgress
+        number={selectFormEvaluation.number}
+        evaluatedDate={formatDate(detail?.evaluatedDate)}
+        status={detail?.status}
+        total={criteria.length}
+        approved={approvedCount}
+        rejected={rejectedCount}
+      />
+
+      {formEvaluation.data?.topics.map((topic) => (
+        <TopicSection
+          key={topic.id}
+          topic={topic}
+          getListFormEvaluation={listFormEvaluationOf}
+          onStatusChange={(childId, status) =>
+            updateListFormEvaluation(childId, () => ({ status }))
+          }
+          onSuggestionChange={(childId, suggestion) =>
+            updateListFormEvaluation(childId, () => ({ suggestion }))
+          }
+          onAddFiles={(childId, fileArray) =>
+            updateListFormEvaluation(childId, (current) => ({
+              files: [...(current.files ?? []), ...fileArray],
+            }))
+          }
+          onRemoveFile={(childId, index) => handleRemoveFile(index, childId)}
+          onRemoveUploadedFile={(childId, fileId) =>
+            handleRemoveFileOnListEvaluation(fileId, childId)
+          }
+        />
+      ))}
+
+      <EvaluationSummary
+        data={evaluationData}
+        onChange={(patch) =>
+          setEvaluationData((prev) => {
+            return {
+              ...prev,
+              ...patch,
+            };
+          })
+        }
+        files={files}
+        onAddFiles={handleAddFiles}
+        onRemoveFile={(file) =>
+          handleDeleteFile({
+            fileOnFormEvaluationId: file.id as string,
+            url: file.url as string,
+          })
+        }
+        approvedCount={approvedCount}
+        rejectedCount={rejectedCount}
+        evaluatedBy={detail?.user}
+        evaluatedDate={formatDate(detail?.evaluatedDate)}
+      />
+
+      <div className="sticky bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 flex items-center gap-3 rounded-xl border border-third-color bg-white/95 p-3 shadow-lg shadow-super-main-color/10 backdrop-blur sm:px-5">
+        <div className="min-w-0 flex-1 text-sm">
+          <p className="font-semibold">
+            ประเมินแล้ว{" "}
+            <span className="tabular-nums">
+              {answeredCount}/{criteria.length}
+            </span>{" "}
+            ข้อ
+          </p>
+          <p className="hidden text-super-main-color/80 sm:block">
+            ไฟล์ที่ยังไม่บันทึกจะอัปโหลดเมื่อกดบันทึก
+          </p>
         </div>
-        <div className=" col-span-1 rounded-lg bg-fifth-color px-3 py-1 text-center">
-          ใช่
-        </div>
-        <div className=" col-span-1 rounded-lg bg-fifth-color px-3 py-1 text-center">
-          ไม่ใช่
-        </div>
-        <div className=" col-span-2 rounded-lg bg-fifth-color px-3 py-1 text-center">
-          ข้อเสนอแนะ
-        </div>
-      </header>
-      <main
-        className="mt-5 flex w-11/12 flex-col items-center justify-center gap-2  text-xl font-semibold text-white 
-      "
-      >
-        {formEvaluation.isLoading
-          ? [...new Array(5)].map((list, index) => {
-              return (
-                <div
-                  key={index}
-                  className="grid h-10 w-full animate-pulse grid-cols-10 gap-2"
-                >
-                  <div className="col-span-6 h-10 animate-pulse rounded-lg bg-gray-400"></div>
-                  <div className="col-span-1 h-10 animate-pulse rounded-lg bg-gray-300"></div>
-                  <div className="col-span-1 h-10 animate-pulse rounded-lg bg-gray-500"></div>
-                  <div className="col-span-2 h-10 animate-pulse rounded-lg bg-gray-300"></div>
-                </div>
-              );
-            })
-          : formEvaluation.data?.topics.map((topic, index) => {
-              return (
-                <section className="grid w-full grid-cols-10 gap-3" key={index}>
-                  <div className="sticky top-10 col-span-10 flex items-center justify-start gap-2 rounded-lg bg-secondary-color p-3 font-semibold text-white">
-                    {topic.order} {topic.title}
-                  </div>
-                  {topic.childs.map((child, index) => {
-                    const list = evaluationListData?.find(
-                      (item) => item.id === child.id,
-                    );
-                    return (
-                      <RadioGroup
-                        aria-label="evaluation"
-                        name={child.id}
-                        key={index}
-                        isRequired
-                        onChange={(e) => {
-                          setEvaluationListData((prev) => {
-                            return prev?.map((item) => {
-                              if (item.id === child.id) {
-                                return {
-                                  ...item,
-                                  listFormEvaluation: {
-                                    ...item.listFormEvaluation,
-                                    status: e as StatusEvaluation,
-                                  },
-                                };
-                              }
-                              return item;
-                            });
-                          });
-                        }}
-                        value={list?.listFormEvaluation?.status}
-                        className="col-span-10 grid w-full grid-cols-10 gap-3"
-                      >
-                        <div className="col-span-6 rounded-lg bg-fourth-color p-5 font-medium text-black">
-                          {child.order} {child.title}
-                        </div>
-                        <Radio
-                          aria-label="approved"
-                          className="col-span-1 flex items-center justify-center rounded-lg bg-fourth-color p-5"
-                          value="approved"
-                        >
-                          {({ isSelected }) => (
-                            <div className="text-4xl text-secondary-color">
-                              {isSelected ? (
-                                <IoIosCheckbox />
-                              ) : (
-                                <IoIosCheckboxOutline />
-                              )}
-                            </div>
-                          )}
-                        </Radio>
-                        <Radio
-                          aria-label="rejected"
-                          className="col-span-1 flex items-center justify-center rounded-lg bg-fourth-color p-5"
-                          value="rejected"
-                        >
-                          {({ isSelected }) => (
-                            <div className="text-4xl text-red-600">
-                              {isSelected ? (
-                                <IoIosCheckbox />
-                              ) : (
-                                <IoIosCheckboxOutline />
-                              )}
-                            </div>
-                          )}
-                        </Radio>
-                        <div className="col-span-2 flex flex-col gap-2">
-                          <label form="dropzone-file">
-                            <div
-                              className="flex w-full items-center justify-center gap-2
-                               rounded-lg bg-main-color px-4 py-1 text-sm 
-          font-semibold text-white hover:bg-super-main-color"
-                            >
-                              <MdUpload />
-                              Click to upload
-                            </div>
-                            <input
-                              onChange={(e) => {
-                                const files = e.target.files;
-
-                                if (files) {
-                                  const fileArray = Array.from(files);
-                                  setEvaluationListData((prev) => {
-                                    return prev?.map((item) => {
-                                      if (item.id === child.id) {
-                                        return {
-                                          ...item,
-                                          listFormEvaluation: {
-                                            ...item.listFormEvaluation,
-                                            files: [
-                                              ...(item.listFormEvaluation
-                                                .files ?? []),
-                                              ...fileArray,
-                                            ],
-                                          },
-                                        };
-                                      }
-                                      return item;
-                                    });
-                                  });
-                                }
-                              }}
-                              multiple
-                              id="dropzone-file"
-                              type="file"
-                              className="hidden"
-                            />
-                          </label>
-                          <TextField
-                            onChange={(e) => {
-                              setEvaluationListData((prev) => {
-                                return prev?.map((item) => {
-                                  if (item.id === child.id) {
-                                    return {
-                                      ...item,
-                                      listFormEvaluation: {
-                                        ...item.listFormEvaluation,
-                                        suggestion: e,
-                                      },
-                                    };
-                                  }
-                                  return item;
-                                });
-                              });
-                            }}
-                            value={
-                              evaluationListData?.find(
-                                (item) => item.id === child.id,
-                              )?.listFormEvaluation?.suggestion
-                            }
-                            aria-label="note"
-                            className=" flex grow items-center justify-center rounded-lg
-                             bg-fourth-color p-1 text-sm text-black"
-                          >
-                            <TextArea
-                              placeholder="....ข้อเสนอแนะ"
-                              className="h-full max-h-full min-h-full w-full min-w-full max-w-full resize-none border-0 p-2 outline-none"
-                            />
-                          </TextField>
-                        </div>
-                        <div className="col-span-10 flex w-full flex-wrap  gap-2">
-                          {[
-                            ...(list?.listFormEvaluation.files ?? []),
-                            ...(list?.listFormEvaluation
-                              .fileOnListFormEvaluations ?? []),
-                          ].map((file, index) => {
-                            if (!list) {
-                              return;
-                            }
-                            const fileToProcess = "file" in file ? file : file; // This line might be needed if item itself could be a File
-                            if (!(fileToProcess instanceof File)) {
-                              const name =
-                                fileToProcess.url.split("/")[
-                                  fileToProcess.url.split("/").length - 1
-                                ];
-                              return (
-                                <li
-                                  key={index}
-                                  className="flex w-max items-center justify-between gap-3 rounded-lg border bg-super-main-color  p-1 pl-3"
-                                >
-                                  <a
-                                    href={fileToProcess.url}
-                                    target="_blank"
-                                    className="flex items-center justify-center gap-2 text-white"
-                                  >
-                                    <MdFileOpen className="mr-3" />
-                                    <section className="flex flex-col gap-0">
-                                      <div className="max-w-96 truncate text-sm">
-                                        {name} {/* Access directly */}
-                                      </div>
-                                    </section>
-                                  </a>
-                                  <button
-                                    onClick={() =>
-                                      handleRemoveFileOnListEvaluation(
-                                        fileToProcess.id,
-                                        list.id,
-                                      )
-                                    }
-                                    type="button"
-                                    className="flex h-6 w-6 items-center justify-center rounded text-sm font-semibold hover:bg-gray-300/50"
-                                  >
-                                    <IoMdClose />
-                                  </button>
-                                </li>
-                              );
-                            }
-                            const url = URL.createObjectURL(fileToProcess);
-
-                            return (
-                              <li
-                                key={index}
-                                className="flex w-max items-center justify-between gap-3 rounded-lg border bg-super-main-color  p-1 pl-3"
-                              >
-                                <a
-                                  href={url}
-                                  target="_blank"
-                                  className="flex items-center justify-center gap-2 text-white"
-                                >
-                                  <MdFileOpen className="mr-3" />
-                                  <section className="flex flex-col gap-0">
-                                    <div className="max-w-96 truncate text-sm">
-                                      {fileToProcess.name}{" "}
-                                      {/* Access directly */}
-                                    </div>
-                                  </section>
-                                </a>
-                                <button
-                                  onClick={() =>
-                                    handleRemoveFile(index, list?.id)
-                                  }
-                                  type="button"
-                                  className="flex h-6 w-6 items-center justify-center rounded text-sm font-semibold hover:bg-gray-300/50"
-                                >
-                                  <IoMdClose />
-                                </button>
-                              </li>
-                            );
-                          })}
-                        </div>
-                      </RadioGroup>
-                    );
-                  })}
-                </section>
-              );
-            })}
-      </main>
-      <footer className="mt-5 flex w-full flex-col items-center justify-center gap-5">
-        <div className="w-11/12 rounded-lg bg-fifth-color px-3 py-1 text-left text-xl font-semibold text-white ">
-          สรุปผลการประเมิน
-        </div>
-        <div className="flex w-11/12 flex-col gap-4 rounded-lg bg-fourth-color p-5">
-          <RadioGroup
-            isRequired
-            onChange={(e) => {
-              setEvaluationData((prev) => {
-                return {
-                  ...prev,
-                  status: e as StatusEvaluation,
-                };
-              });
-            }}
-            value={evaluationData?.status}
-            aria-label="evaluation"
-            className=" grid w-full grid-cols-2 gap-3"
-          >
-            <Radio
-              aria-label="approved"
-              className="col-span-1 flex items-center justify-center rounded-lg bg-fourth-color p-5"
-              value="approved"
-            >
-              {({ isSelected }) => (
-                <div className="flex items-center justify-center gap-2 text-4xl text-secondary-color">
-                  {isSelected ? <IoIosCheckbox /> : <IoIosCheckboxOutline />}{" "}
-                  <span className="text-lg font-bold text-secondary-color">
-                    ผ่านการประเมิน
-                  </span>
-                </div>
-              )}
-            </Radio>
-            <Radio
-              aria-label="rejected"
-              className="col-span-1 flex items-center justify-center rounded-lg bg-fourth-color p-5"
-              value="rejected"
-            >
-              {({ isSelected }) => (
-                <div className="flex items-center justify-center gap-2 text-4xl text-red-600">
-                  {isSelected ? <IoIosCheckbox /> : <IoIosCheckboxOutline />}
-                  <span className="text-lg font-bold text-red-600">
-                    ไม่ผ่านการประเมิน
-                  </span>
-                </div>
-              )}
-            </Radio>
-          </RadioGroup>
-          {formEvaluation.data?.formEvaluation.user && (
-            <div className="flex w-full items-center justify-start gap-5 text-lg font-semibold text-black">
-              <h3>ประเมินโดย</h3>
-              <h3>
-                {formEvaluation.data?.formEvaluation.user.firstName}{" "}
-                {formEvaluation.data?.formEvaluation.user.lastName}
-              </h3>
-              <h3 className="flex items-center justify-start gap-2 text-super-main-color">
-                <MdEmail />
-                {formEvaluation.data?.formEvaluation.user.email}{" "}
-              </h3>
-              <h3 className="flex items-center justify-start gap-2 text-super-main-color">
-                <FaSquarePhone />
-                {formEvaluation.data?.formEvaluation.user.phone}{" "}
-              </h3>
-              <h3 className="flex items-center justify-start gap-2 text-super-main-color">
-                ประเมินเมื่อวันที่{" "}
-                {moment(
-                  formEvaluation.data.formEvaluation.evaluatedDate,
-                ).format("DD/MMMM/YYYY")}{" "}
-              </h3>
-            </div>
-          )}
-          <FileTrigger
-            allowsMultiple
-            onSelect={(e) => {
-              if (!e) return null;
-
-              const files: FileList = e;
-
-              Array.from(files).forEach((file) => {
-                const url = URL.createObjectURL(file);
-                const reader = new FileReader();
-
-                setFiles((prev) => {
-                  if (!prev) return [{ file, url: url }];
-                  return [...prev, { file, url: url, type: file.type }];
-                });
-
-                reader.readAsDataURL(file);
-              });
-            }}
-          >
-            <Button
-              className=" flex w-80 items-center justify-center gap-2 rounded-lg bg-main-color px-4 py-1 font-semibold 
-          text-white hover:bg-super-main-color"
-            >
-              <FaFileArrowDown />
-              อัพโหลดไฟล์แนบ
-            </Button>
-          </FileTrigger>
-          <div className="grid w-full grid-cols-3 gap-2">
-            {files?.map((file, index) => {
-              const fileName = file?.url?.split("/").pop();
-              return (
-                <div
-                  key={index}
-                  className="relative  flex h-10 w-full cursor-pointer select-none
-                        items-center justify-between  gap-2 rounded-xl bg-purple-100 px-5 
-                        ring-2 ring-purple-500 drop-shadow-sm
-                     transition duration-75 "
-                >
-                  <div className="flex justify-center gap-1">
-                    <div className="flex items-center justify-center text-purple-700">
-                      <BsFileEarmarkCode />
-                    </div>
-                    <span className="w-max max-w-[7rem] truncate text-sm md:max-w-40 ">
-                      {file?.id ? fileName : file.file?.name}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <div
-                      onClick={() => window.open(file.url, "_blank")}
-                      className=" z-40 flex
-                     cursor-pointer items-center justify-center gap-2 rounded-md bg-green-500 p-1  text-xl text-white"
-                    >
-                      <GrFormView />
-                    </div>
-                    <div
-                      onClick={() => {
-                        handleDeleteFile({
-                          fileOnFormEvaluationId: file.id as string,
-                          url: file.url as string,
-                        });
-                      }}
-                      className=" z-40 flex cursor-pointer 
-                     items-center justify-center gap-2 rounded-md bg-red-500 p-1  text-xl text-white"
-                    >
-                      <MdDelete />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <TextField
-            onChange={(e) => {
-              setEvaluationData((prev) => {
-                return {
-                  ...prev,
-                  reason: e,
-                };
-              });
-            }}
-            value={evaluationData?.reason}
-          >
-            <Label className="text-lg font-semibold text-super-main-color">
-              เนื่องจาก:{" "}
-            </Label>
-            <TextArea
-              placeholder="..ข้อเสนอแนะ"
-              className="h-32 w-full resize-none rounded-lg border-0 p-5 text-lg outline-none ring-1 ring-black"
-            ></TextArea>
-          </TextField>
-
-          <section className="grid w-full grid-cols-3">
-            <div className="flex flex-col items-center justify-center gap-3">
-              <span>ผู้ประเมินคนที่ 1</span>
-              <input
-                value={evaluationData?.first_evaluator_name}
-                onChange={(e) => {
-                  setEvaluationData((prev) => {
-                    return {
-                      ...prev,
-                      first_evaluator_name: e.target.value,
-                    };
-                  });
-                }}
-                required
-                placeholder="ชื่อผู้ประเมินคนที่ 1"
-                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
-              />
-              <input
-                value={evaluationData?.first_evaluator_position}
-                onChange={(e) => {
-                  setEvaluationData((prev) => {
-                    return {
-                      ...prev,
-                      first_evaluator_position: e.target.value,
-                    };
-                  });
-                }}
-                required
-                placeholder="ตำแหน่งผู้ประเมินคนที่ 1"
-                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
-              />
-            </div>
-            <div className="flex flex-col items-center justify-center gap-3">
-              <span>ผู้ประเมินคนที่ 2</span>
-              <input
-                value={evaluationData?.second_evaluator_name}
-                onChange={(e) => {
-                  setEvaluationData((prev) => {
-                    return {
-                      ...prev,
-                      second_evaluator_name: e.target.value,
-                    };
-                  });
-                }}
-                required
-                placeholder="ชื่อผู้ประเมินคนที่ 2"
-                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
-              />
-              <input
-                value={evaluationData?.second_evaluator_position}
-                onChange={(e) => {
-                  setEvaluationData((prev) => {
-                    return {
-                      ...prev,
-                      second_evaluator_position: e.target.value,
-                    };
-                  });
-                }}
-                required
-                placeholder="ตำแหน่งผู้ประเมินคนที่ 2"
-                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
-              />
-            </div>
-            <div className="flex flex-col items-center justify-center gap-3">
-              <span>ผู้ประเมินคนที่ 3</span>
-              <input
-                value={evaluationData?.third_evaluator_name}
-                onChange={(e) => {
-                  setEvaluationData((prev) => {
-                    return {
-                      ...prev,
-                      third_evaluator_name: e.target.value,
-                    };
-                  });
-                }}
-                required
-                placeholder="ชื่อผู้ประเมินคนที่ 3"
-                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
-              />
-              <input
-                value={evaluationData?.third_evaluator_position}
-                onChange={(e) => {
-                  setEvaluationData((prev) => {
-                    return {
-                      ...prev,
-                      third_evaluator_position: e.target.value,
-                    };
-                  });
-                }}
-                required
-                placeholder="ตำแหน่งผู้ประเมินคนที่ 3"
-                className="w-60 rounded-md border border-super-main-color p-2 focus:outline-super-main-color"
-              />
-            </div>
-          </section>
-
-          <Button
-            type="submit"
-            className="button-focus w-60 rounded-lg bg-super-main-color p-2 text-lg font-semibold text-white"
-          >
-            บันทึก
-          </Button>
-        </div>
-      </footer>
+        <Button type="submit" className="btn btn-primary">
+          <LuSave aria-hidden="true" className="size-4" />
+          บันทึกผลการประเมิน
+        </Button>
+      </div>
     </Form>
   );
 }

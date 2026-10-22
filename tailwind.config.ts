@@ -7,7 +7,6 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./layouts/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/primereact/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -25,7 +24,7 @@ const config: Config = {
         "fifth-color": "#C6A969",
       },
       fontFamily: {
-        Anuphan: ["Anuphan", "sans-serif"],
+        Anuphan: ["var(--font-anuphan)", "Anuphan", "sans-serif"],
       },
     },
   },
